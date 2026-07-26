@@ -280,80 +280,94 @@
   function initDouyinInput() {
     const input = document.getElementById('douyin-link-input');
     const btn = document.getElementById('douyin-link-btn');
+    const resultCard = document.getElementById('douyin-result-card');
 
-    btn.addEventListener('click', () => processDouyinLink());
+    btn.addEventListener('click', () => {
+      const url = input.value.trim();
+      if (!url) { showToast('请先粘贴抖音链接'); return; }
+      // 显示输入文案的表单
+      showDouyinManualInput(url);
+    });
+
     input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') processDouyinLink();
+      if (e.key === 'Enter') {
+        const url = input.value.trim();
+        if (!url) { showToast('请先粘贴抖音链接'); return; }
+        showDouyinManualInput(url);
+      }
     });
   }
 
-  async function processDouyinLink() {
-    const input = document.getElementById('douyin-link-input');
-    const statusEl = document.getElementById('douyin-status');
+  // 由于抖音有跨域限制，前端无法直接抓取。
+  // 改为两步流程：粘贴链接 → 粘贴视频中的文案/金句 → 自动分类保存
+  function showDouyinManualInput(sourceUrl) {
     const resultCard = document.getElementById('douyin-result-card');
-    const btn = document.getElementById('douyin-link-btn');
+    const input = document.getElementById('douyin-link-input');
 
-    const url = input.value.trim();
-    if (!url) { showToast('请先粘贴抖音链接'); return; }
+    resultCard.style.display = 'block';
+    resultCard.innerHTML = `
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+        🔗 链接已记录：<span style="word-break:break-all;color:var(--text);">${escapeHtml(sourceUrl)}</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">📝 粘贴视频中的金句或文案</div>
+      <textarea class="form-textarea" id="douyin-manual-content" rows="4"
+        placeholder="把视频里打动你的那句话、那段文案复制到这里..." style="margin-bottom:12px;"></textarea>
+      <div class="douyin-result-tags" id="douyin-live-tags" style="margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" id="douyin-analyze-btn">分析并分类</button>
+        <button class="btn-secondary" id="douyin-skip-btn">跳过，只保存链接</button>
+        <button class="btn-secondary" id="douyin-close-btn">取消</button>
+      </div>
+    `;
 
-    // 显示加载
-    btn.classList.add('loading');
-    btn.textContent = '提取中...';
-    statusEl.style.display = 'block';
-    statusEl.className = 'douyin-status loading';
-    statusEl.textContent = '正在尝试获取视频信息...';
-    resultCard.style.display = 'none';
+    const contentTa = document.getElementById('douyin-manual-content');
 
-    try {
-      // 尝试抓取抖音页面
-      let pageContent = '';
-      try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
-        if (resp.ok) pageContent = await resp.text();
-      } catch (e) {
-        // 抓取失败，走 fallback
-      }
-
-      if (pageContent) {
-        // 尝试提取 meta 信息
-        const titleMatch = pageContent.match(/<title[^>]*>([^<]+)<\/title>/i);
-        const descMatch = pageContent.match(/<meta[^>]*name="description"[^>]*content="([^"]+)"/i);
-        const title = titleMatch ? titleMatch[1].replace(/[\\n\\r]/g, '').trim() : '';
-        const desc = descMatch ? descMatch[1].replace(/[\\n\\r]/g, '').trim() : '';
-
-        if (title || desc) {
-          const content = [title, desc].filter(Boolean).join('\n');
-          const result = analyzeDouyinContent(content, url);
-          showDouyinResult(result);
-        } else {
-          throw new Error('no_content');
-        }
+    // 实时分析
+    contentTa.addEventListener('input', () => {
+      const content = contentTa.value.trim();
+      if (content.length > 3) {
+        const result = analyzeDouyinContent(content, sourceUrl);
+        document.getElementById('douyin-live-tags').innerHTML = `
+          <span style="font-size:12px;color:var(--text-muted);margin-right:6px;">预测分类：</span>
+          <span style="font-size:12px;font-weight:600;color:${INSPO_TYPES.find(t=>t.id===result.type)?.color||'#c4a8a2'};">${INSPO_TYPES.find(t=>t.id===result.type)?.icon} ${INSPO_TYPES.find(t=>t.id===result.type)?.name}</span>
+          ${result.tags.map(t => `<span class="douyin-result-tag">#${t}</span>`).join('')}
+        `;
       } else {
-        throw new Error('fetch_failed');
+        document.getElementById('douyin-live-tags').innerHTML = '';
       }
-    } catch (e) {
-      // Fallback：引导手动输入
-      statusEl.className = 'douyin-status error';
-      statusEl.textContent = '自动抓取失败，请在下方输入框中粘贴视频中的金句或文案，我会帮你自动分类。';
+    });
 
-      const manualContent = input.value.includes('http') ? '' : input.value;
-      if (manualContent && manualContent.length > 10) {
-        const result = analyzeDouyinContent(manualContent, url);
-        showDouyinResult(result);
-      } else {
-        statusEl.style.display = 'none';
-        input.placeholder = '手动粘贴视频中的金句/文案/标题...';
-        input.value = '';
-        input.focus();
-      }
-    }
+    document.getElementById('douyin-analyze-btn').addEventListener('click', () => {
+      const content = contentTa.value.trim();
+      if (!content || content.length < 5) { showToast('请先粘贴视频中的文案或金句'); return; }
+      const result = analyzeDouyinContent(content, sourceUrl);
+      showDouyinResult(result);
+    });
 
-    btn.classList.remove('loading');
-    btn.textContent = '提取';
+    document.getElementById('douyin-skip-btn').addEventListener('click', () => {
+      state.inspirations.push({
+        id: generateId(),
+        title: '抖音收藏 · 待整理',
+        type: 'topic',
+        desc: `来源链接：${sourceUrl}`,
+        source: '抖音',
+        sourceUrl: sourceUrl,
+        tags: [],
+        createdAt: Date.now()
+      });
+      saveState();
+      renderInspirations();
+      resultCard.style.display = 'none';
+      input.value = '';
+      showToast('已保存链接（待整理）');
+    });
+
+    document.getElementById('douyin-close-btn').addEventListener('click', () => {
+      resultCard.style.display = 'none';
+    });
   }
 
   function analyzeDouyinContent(content, sourceUrl) {
-    // 基于关键词自动分类
     const scores = {};
     for (const [type, keywords] of Object.entries(DOUYIN_KEYWORDS)) {
       scores[type] = keywords.reduce((sum, kw) => sum + (content.includes(kw) ? 1 : 0), 0);
@@ -363,10 +377,8 @@
     const confidence = bestType[1] > 0 ? Math.min(bestType[1] * 25, 95) : 50;
     const type = bestType[1] > 0 ? bestType[0] : 'quote';
 
-    // 截取前 80 字作为标题
     const title = content.length > 80 ? content.slice(0, 80) + '...' : content;
 
-    // 提取标签
     const tags = [];
     if (content.includes('文案')) tags.push('文案');
     if (content.includes('选题')) tags.push('选题');
@@ -379,25 +391,26 @@
   }
 
   function showDouyinResult(result) {
-    const statusEl = document.getElementById('douyin-status');
     const resultCard = document.getElementById('douyin-result-card');
+    const input = document.getElementById('douyin-link-input');
     const typeInfo = INSPO_TYPES.find(t => t.id === result.type) || INSPO_TYPES[0];
 
-    statusEl.style.display = 'none';
-    resultCard.style.display = 'block';
+    resultCard.innerHTML = `
+      <div class="douyin-result-header">
+        <span class="douyin-result-type" style="background:${typeInfo.color}15;color:${typeInfo.color};">${typeInfo.icon} ${typeInfo.name}</span>
+        <span class="douyin-result-confidence">匹配度 ${result.confidence}%</span>
+      </div>
+      <p class="douyin-result-title">${escapeHtml(result.title)}</p>
+      <p class="douyin-result-summary">${escapeHtml(result.summary)}</p>
+      <div class="douyin-result-tags">${result.tags.map(t => `<span class="douyin-result-tag">#${t}</span>`).join('')}</div>
+      <div class="douyin-result-actions">
+        <button class="btn-primary" id="douyin-save-btn">保存到灵感库</button>
+        <button class="btn-secondary" id="douyin-edit-btn">修改后再保存</button>
+        <button class="btn-secondary" id="douyin-back-btn">返回重填</button>
+      </div>
+    `;
 
-    document.getElementById('douyin-result-type').textContent = `${typeInfo.icon} ${typeInfo.name}`;
-    document.getElementById('douyin-result-type').style.background = `${typeInfo.color}15`;
-    document.getElementById('douyin-result-type').style.color = typeInfo.color;
-    document.getElementById('douyin-result-confidence').textContent = `匹配度 ${result.confidence}%`;
-    document.getElementById('douyin-result-title').textContent = result.title;
-    document.getElementById('douyin-result-summary').textContent = result.summary;
-    document.getElementById('douyin-result-tags').innerHTML =
-      result.tags.map(t => `<span class="douyin-result-tag">#${t}</span>`).join('');
-
-    douyinPendingResult = result;
-
-    document.getElementById('douyin-save-btn').onclick = () => {
+    document.getElementById('douyin-save-btn').addEventListener('click', () => {
       state.inspirations.push({
         id: generateId(),
         title: result.title,
@@ -411,25 +424,24 @@
       saveState();
       renderInspirations();
       resultCard.style.display = 'none';
-      document.getElementById('douyin-link-input').value = '';
+      input.value = '';
       showToast('灵感已保存 ✓');
-    };
+    });
 
-    document.getElementById('douyin-edit-btn').onclick = () => {
+    document.getElementById('douyin-edit-btn').addEventListener('click', () => {
       document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
       document.querySelector('.add-tab[data-tab="inspiration"]').classList.add('active');
       document.getElementById('entry-board').value = result.type;
       document.getElementById('entry-title').value = result.title;
       document.getElementById('entry-desc').value = result.summary;
       resultCard.style.display = 'none';
-      document.getElementById('douyin-link-input').value = '';
+      input.value = '';
       navigateTo('add');
-    };
+    });
 
-    document.getElementById('douyin-cancel-btn').onclick = () => {
-      resultCard.style.display = 'none';
-      document.getElementById('douyin-link-input').value = '';
-    };
+    document.getElementById('douyin-back-btn').addEventListener('click', () => {
+      showDouyinManualInput(result.sourceUrl);
+    });
   }
 
   // ===== 渲染灵感页 =====
