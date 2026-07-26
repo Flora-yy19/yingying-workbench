@@ -420,35 +420,94 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: var(--font); back
 }
 .weekly-textarea:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 3px var(--sage-pale); }
 
-/* ===== 备忘录 ===== */
-.memo-form {
-  background: var(--surface); border-radius: var(--radius);
-  padding: 16px; box-shadow: var(--shadow); margin-bottom: 14px;
+/* ===== Hub 板块（选题/英语/剪辑/修图） ===== */
+.hub-header {
+  text-align: center; padding: 20px 0 16px;
 }
 
-.memo-input {
-  width: 100%; border: 1px solid var(--border); border-radius: 12px;
-  padding: 12px; font-size: 14px; font-family: inherit;
-  color: var(--text); background: var(--bg); resize: none;
-  margin-bottom: 10px;
+.hub-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+
+.hub-header h3 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+
+.hub-desc {
+  font-size: 13px; color: var(--text-muted); margin: 0;
 }
-.memo-input:focus { outline: none; border-color: var(--sand); box-shadow: 0 0 0 3px var(--sand-pale); }
 
-.memo-list { display: flex; flex-direction: column; gap: 10px; }
+.hub-section { margin-bottom: 20px; }
 
-.memo-card {
+.hub-section-title {
+  font-size: 14px; font-weight: 600;
+  margin: 0 0 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* 学习资源列表 */
+.resource-list { display: flex; flex-direction: column; gap: 8px; }
+
+.resource-item {
   background: var(--surface); border-radius: var(--radius-sm);
-  padding: 14px; box-shadow: var(--shadow);
-  border-left: 3px solid var(--sand);
+  padding: 12px 14px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: transform 0.15s ease;
+  border-left: 3px solid transparent;
 }
 
-.memo-card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 6px;
+.resource-item:active { transform: scale(0.98); }
+
+.resource-item .platform-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 999px;
+  font-weight: 600; flex-shrink: 0;
 }
 
-.memo-card-date { font-size: 11px; color: var(--text-muted); }
-.memo-card-body { font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+.platform-douyin { background: #1a1a1a; color: #fff; }
+.platform-xiaohongshu { background: #ff4444; color: #fff; }
+.platform-bilibili { background: #00a1d6; color: #fff; }
+.platform-other { background: var(--surface-2); color: var(--text-muted); }
+
+.resource-item .resource-thumb {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0; overflow: hidden;
+}
+
+.resource-item .resource-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.resource-item .resource-info { flex: 1; min-width: 0; }
+
+.resource-item .resource-title {
+  font-size: 14px; font-weight: 500; margin: 0 0 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.resource-item .resource-desc {
+  font-size: 12px; color: var(--text-muted); margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.resource-item .resource-actions {
+  display: flex; gap: 4px; flex-shrink: 0;
+}
+
+.resource-item .resource-actions button {
+  width: 30px; height: 30px; border: none; border-radius: 8px;
+  background: var(--surface-2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--text-muted);
+  transition: background 0.2s ease;
+}
+
+.resource-item .resource-actions button:active { background: var(--green-pale); color: var(--green); }
+
+/* 推荐标记 */
+.resource-item.recommended { border-left-color: var(--coral); }
+
+.resource-item .rec-badge {
+  font-size: 10px; background: var(--coral-pale); color: var(--coral);
+  padding: 1px 6px; border-radius: 999px; font-weight: 600;
+}
 
 /* ===== 添加页 ===== */
 .add-tabs {

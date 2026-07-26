@@ -13,10 +13,8 @@
 </head>
 <body>
   <div id="app">
-    <!-- 侧边栏遮罩 -->
+    <!-- 侧边栏 -->
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-    <!-- 左侧边栏抽屉 -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="sidebar-avatar">影</div>
@@ -28,22 +26,17 @@
       <nav class="sidebar-nav" id="sidebar-nav"></nav>
       <div class="sidebar-footer">
         <button class="sidebar-item" data-page="settings">
-          <span class="sidebar-icon">⚙️</span>
-          <span class="sidebar-label">设置</span>
+          <span class="sidebar-icon">⚙️</span><span class="sidebar-label">设置</span>
         </button>
       </div>
     </aside>
 
     <!-- 页面容器 -->
     <div class="page-container" id="page-container">
-
-      <!-- 顶部栏 -->
       <header class="topbar">
         <button class="menu-btn" id="menu-btn" aria-label="菜单">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="15" y2="18"/>
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
           </svg>
         </button>
         <h2 class="topbar-title" id="topbar-title">影影的工作台</h2>
@@ -76,42 +69,45 @@
       <!-- 每日计划 -->
       <section class="page" id="page-daily">
         <div class="page-card">
-          <div class="page-header">
-            <span class="page-icon">☀️</span><h3>每日计划</h3>
-          </div>
+          <div class="page-header"><span class="page-icon">☀️</span><h3>每日计划</h3></div>
           <div class="task-list" id="daily-tasks"></div>
+        </div>
+      </section>
+
+      <!-- 选题灵感 -->
+      <section class="page" id="page-topic">
+        <div class="hub-header">
+          <span class="hub-icon">🔥</span>
+          <h3>选题灵感</h3>
+          <p class="hub-desc">爆款拆解 · 选题库 · 热点追踪</p>
+        </div>
+        <!-- 推荐视频区 -->
+        <div class="hub-section">
+          <div class="hub-section-title">📺 推荐视频</div>
+          <div class="resource-list" id="topic-recommend"></div>
+        </div>
+        <!-- 我的收藏 -->
+        <div class="hub-section">
+          <div class="hub-section-title">📌 我的选题库</div>
+          <div class="resource-list" id="topic-mine"></div>
+        </div>
+        <!-- 今日练习任务 -->
+        <div class="hub-section">
+          <div class="hub-section-title">✅ 今日任务</div>
+          <div class="task-list" id="topic-tasks"></div>
         </div>
       </section>
 
       <!-- 灵感抓取 -->
       <section class="page" id="page-inspo">
-        <!-- 抖音链接粘贴入口 -->
         <div class="douyin-link-box" id="douyin-link-box">
           <div class="douyin-link-row">
-            <input type="text" class="douyin-link-input" id="douyin-link-input"
-              placeholder="粘贴抖音分享链接，自动提取灵感...">
+            <input type="text" class="douyin-link-input" id="douyin-link-input" placeholder="粘贴抖音/小红书/B站分享链接...">
             <button class="douyin-link-btn" id="douyin-link-btn">提取</button>
           </div>
-          <p class="douyin-link-hint">在抖音点「分享」→「复制链接」，粘贴到此处</p>
-          <div class="douyin-status" id="douyin-status" style="display:none;"></div>
+          <p class="douyin-link-hint">支持抖音、小红书、B站链接，粘贴后手动填入金句/文案，自动分类</p>
         </div>
-
-        <!-- 提取结果预览卡片 -->
-        <div class="douyin-result-card" id="douyin-result-card" style="display:none;">
-          <div class="douyin-result-header">
-            <span class="douyin-result-type" id="douyin-result-type"></span>
-            <span class="douyin-result-confidence" id="douyin-result-confidence"></span>
-          </div>
-          <p class="douyin-result-title" id="douyin-result-title"></p>
-          <p class="douyin-result-summary" id="douyin-result-summary"></p>
-          <div class="douyin-result-tags" id="douyin-result-tags"></div>
-          <div class="douyin-result-actions">
-            <button class="btn-primary" id="douyin-save-btn">保存到灵感库</button>
-            <button class="btn-secondary" id="douyin-edit-btn">手动编辑</button>
-            <button class="btn-secondary" id="douyin-cancel-btn">取消</button>
-          </div>
-        </div>
-
+        <div class="douyin-result-card" id="douyin-result-card" style="display:none;"></div>
         <div class="filter-bar" id="inspo-filter"></div>
         <div class="inspo-list" id="inspo-list"></div>
       </section>
@@ -130,35 +126,62 @@
         <div id="weekly-content"></div>
       </section>
 
-      <!-- 备忘录 -->
-      <section class="page" id="page-memo">
-        <div class="memo-form">
-          <textarea class="memo-input" id="memo-input" rows="2" placeholder="写一条备忘录..."></textarea>
-          <button class="btn-primary" id="memo-add-btn">添加</button>
-        </div>
-        <div class="memo-list" id="memo-list"></div>
-      </section>
-
       <!-- 英语学习 -->
       <section class="page" id="page-english">
-        <div class="page-card">
-          <div class="page-header"><span class="page-icon">🌿</span><h3>英语学习</h3></div>
+        <div class="hub-header">
+          <span class="hub-icon">🌿</span><h3>英语学习</h3>
+          <p class="hub-desc">视频教程 · 单词打卡 · 听力练习</p>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">📺 推荐视频</div>
+          <div class="resource-list" id="english-recommend"></div>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">📌 我的学习资料</div>
+          <div class="resource-list" id="english-mine"></div>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">✅ 今日任务</div>
           <div class="task-list" id="english-tasks"></div>
         </div>
       </section>
 
       <!-- 剪辑练习 -->
       <section class="page" id="page-edit">
-        <div class="page-card">
-          <div class="page-header"><span class="page-icon">🎬</span><h3>剪辑练习</h3></div>
+        <div class="hub-header">
+          <span class="hub-icon">🎬</span><h3>剪辑练习</h3>
+          <p class="hub-desc">教程 · 案例拆解 · 转场练习</p>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">📺 推荐视频</div>
+          <div class="resource-list" id="edit-recommend"></div>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">📌 我的素材库</div>
+          <div class="resource-list" id="edit-mine"></div>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">✅ 今日任务</div>
           <div class="task-list" id="edit-tasks"></div>
         </div>
       </section>
 
       <!-- 修图练习 -->
       <section class="page" id="page-photo">
-        <div class="page-card">
-          <div class="page-header"><span class="page-icon">🖼️</span><h3>修图练习</h3></div>
+        <div class="hub-header">
+          <span class="hub-icon">🖼️</span><h3>修图练习</h3>
+          <p class="hub-desc">调色教程 · 构图参考 · 素材练习</p>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">📺 推荐视频</div>
+          <div class="resource-list" id="photo-recommend"></div>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">📌 我的素材库</div>
+          <div class="resource-list" id="photo-mine"></div>
+        </div>
+        <div class="hub-section">
+          <div class="hub-section-title">✅ 今日任务</div>
           <div class="task-list" id="photo-tasks"></div>
         </div>
       </section>
@@ -167,6 +190,7 @@
       <section class="page" id="page-add">
         <div class="add-tabs">
           <button class="add-tab active" data-tab="task">添加任务</button>
+          <button class="add-tab" data-tab="resource">添加学习资料</button>
           <button class="add-tab" data-tab="inspiration">添加灵感</button>
         </div>
         <form class="add-form" id="add-form">
@@ -174,13 +198,30 @@
             <label>所属板块</label>
             <select class="form-select" id="entry-board"></select>
           </div>
+          <div class="form-group" id="resource-type-group" style="display:none;">
+            <label>类型</label>
+            <select class="form-select" id="resource-type">
+              <option value="video">视频链接</option>
+              <option value="image">图片/截图</option>
+              <option value="article">文章/笔记</option>
+            </select>
+          </div>
           <div class="form-group">
             <label>标题</label>
             <input type="text" class="form-input" id="entry-title" placeholder="输入标题" required>
           </div>
           <div class="form-group">
-            <label>备注 / 链接 / 详情</label>
-            <textarea class="form-textarea" id="entry-desc" rows="4" placeholder="粘贴链接、复制文案或写下备注"></textarea>
+            <label id="desc-label">链接 / 文案 / 备注</label>
+            <textarea class="form-textarea" id="entry-desc" rows="4" placeholder="粘贴视频链接、图片链接或写下内容..."></textarea>
+          </div>
+          <div class="form-group" id="platform-group" style="display:none;">
+            <label>来源平台</label>
+            <select class="form-select" id="entry-platform">
+              <option value="douyin">抖音</option>
+              <option value="xiaohongshu">小红书</option>
+              <option value="bilibili">B站</option>
+              <option value="other">其他</option>
+            </select>
           </div>
           <div class="form-group" id="date-group">
             <label>日期</label>
@@ -201,8 +242,8 @@
             <input type="file" id="import-file" accept=".json" hidden>
           </div>
           <div class="settings-card">
-            <h3>🔗 抖音灵感抓取</h3>
-            <p class="settings-desc">在灵感页面粘贴抖音分享链接，系统会尝试提取视频信息并自动分类。如抓取失败，可以手动填写内容。</p>
+            <h3>🔗 灵感抓取</h3>
+            <p class="settings-desc">在灵感页面粘贴抖音/小红书/B站分享链接，填入金句文案后自动分类保存。</p>
           </div>
           <div class="settings-card">
             <h3>⚠️ 危险操作</h3>
@@ -216,17 +257,15 @@
     <nav class="bottom-nav">
       <button class="nav-item active" data-nav="home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
         <span>首页</span>
       </button>
-      <button class="nav-item" data-nav="daily">
+      <button class="nav-item" data-nav="topic">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-          <polyline points="22 4 12 14.01 9 11.01"/>
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
         </svg>
-        <span>任务</span>
+        <span>选题</span>
       </button>
       <button class="nav-item nav-add" data-nav="add">
         <div class="add-circle">
@@ -244,15 +283,13 @@
       <button class="nav-item" data-nav="weekly">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
         </svg>
         <span>复盘</span>
       </button>
     </nav>
   </div>
 
-  <!-- Toast -->
   <div class="toast" id="toast"></div>
   <script src="js/app.js"></script>
 </body>
