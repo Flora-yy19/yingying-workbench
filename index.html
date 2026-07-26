@@ -13,27 +13,52 @@
 </head>
 <body>
   <div id="app">
-    <!-- 顶部栏 -->
-    <header class="app-header">
-      <div class="header-left">
-        <h1 class="app-title">影影的工作台</h1>
-        <p class="app-date" id="current-date">--</p>
-      </div>
-      <button class="icon-btn" id="sync-btn" aria-label="同步">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-          <path d="M16 21h5v-5"/>
-        </svg>
-      </button>
-    </header>
+    <!-- 侧边栏遮罩 -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-    <!-- 主内容区 -->
-    <main class="app-main" id="app-main">
+    <!-- 左侧边栏抽屉 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-avatar">影</div>
+        <div class="sidebar-user">
+          <div class="sidebar-name">影影的工作台</div>
+          <div class="sidebar-date" id="current-date">--</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <div class="sidebar-footer">
+        <button class="sidebar-item" data-page="settings">
+          <span class="sidebar-icon">⚙️</span>
+          <span class="sidebar-label">设置</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 页面容器 -->
+    <div class="page-container" id="page-container">
+
+      <!-- 顶部栏（带菜单按钮） -->
+      <header class="topbar">
+        <button class="menu-btn" id="menu-btn" aria-label="菜单">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="15" y2="18"/>
+          </svg>
+        </button>
+        <h2 class="topbar-title" id="topbar-title">影影的工作台</h2>
+        <button class="icon-btn sync-btn" id="sync-btn" aria-label="同步">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+            <path d="M16 21h5v-5"/>
+          </svg>
+        </button>
+      </header>
 
       <!-- 首页 -->
-      <section class="view active" id="view-home">
+      <section class="page active" id="page-home">
         <div class="greeting-card">
           <div class="greeting-text">
             <p class="greeting-hello">今天也是创作的一天 ☁️</p>
@@ -47,54 +72,28 @@
             <span class="progress-text" id="progress-text">0%</span>
           </div>
         </div>
-
-        <div class="section-header">
-          <h3>📋 今日任务</h3>
-          <button class="text-link" data-nav="tasks">全部板块 →</button>
-        </div>
-
-        <div class="task-list" id="home-tasks"></div>
-
-        <div class="section-header">
-          <h3>🗂 我的板块</h3>
-        </div>
-
-        <div class="board-grid" id="board-grid"></div>
+        <div class="home-shortcuts" id="home-shortcuts"></div>
       </section>
 
-      <!-- 任务页（按板块） -->
-      <section class="view" id="view-tasks">
-        <div class="category-list" id="board-list"></div>
-        <div class="task-detail-area" id="task-detail-area">
-          <div class="empty-state">
-            <div class="empty-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </div>
-            <p>选择一个板块，查看今日任务</p>
+      <!-- 每日计划 -->
+      <section class="page" id="page-daily">
+        <div class="page-card">
+          <div class="page-header">
+            <span class="page-icon">☀️</span>
+            <h3>每日计划</h3>
           </div>
+          <div class="task-list" id="daily-tasks"></div>
         </div>
       </section>
 
-      <!-- 灵感抓取页 -->
-      <section class="view" id="view-inspirations">
-        <div class="filter-bar">
-          <button class="filter-btn active" data-filter="all">全部</button>
-          <button class="filter-btn" data-filter="quote">语录金句</button>
-          <button class="filter-btn" data-filter="copy">文案灵感</button>
-          <button class="filter-btn" data-filter="visual">视觉参考</button>
-          <button class="filter-btn" data-filter="music">音乐/BGM</button>
-          <button class="filter-btn" data-filter="topic">爆款选题</button>
-          <button class="filter-btn" data-filter="comment">评论素材</button>
-        </div>
+      <!-- 灵感抓取 -->
+      <section class="page" id="page-inspo">
+        <div class="filter-bar" id="inspo-filter"></div>
         <div class="inspo-list" id="inspo-list"></div>
       </section>
 
-      <!-- 周周复盘页 -->
-      <section class="view" id="view-weekly">
+      <!-- 周周复盘 -->
+      <section class="page" id="page-weekly">
         <div class="weekly-week-selector">
           <button id="week-prev">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -107,15 +106,57 @@
         <div id="weekly-content"></div>
       </section>
 
+      <!-- 备忘录 -->
+      <section class="page" id="page-memo">
+        <div class="memo-form">
+          <textarea class="memo-input" id="memo-input" rows="2" placeholder="写一条备忘录..."></textarea>
+          <button class="btn-primary" id="memo-add-btn">添加</button>
+        </div>
+        <div class="memo-list" id="memo-list"></div>
+      </section>
+
+      <!-- 英语学习 -->
+      <section class="page" id="page-english">
+        <div class="page-card">
+          <div class="page-header">
+            <span class="page-icon">🌿</span>
+            <h3>英语学习</h3>
+          </div>
+          <div class="task-list" id="english-tasks"></div>
+        </div>
+      </section>
+
+      <!-- 剪辑练习 -->
+      <section class="page" id="page-edit">
+        <div class="page-card">
+          <div class="page-header">
+            <span class="page-icon">🎬</span>
+            <h3>剪辑练习</h3>
+          </div>
+          <div class="task-list" id="edit-tasks"></div>
+        </div>
+      </section>
+
+      <!-- 修图练习 -->
+      <section class="page" id="page-photo">
+        <div class="page-card">
+          <div class="page-header">
+            <span class="page-icon">🖼️</span>
+            <h3>修图练习</h3>
+          </div>
+          <div class="task-list" id="photo-tasks"></div>
+        </div>
+      </section>
+
       <!-- 添加页 -->
-      <section class="view" id="view-add">
+      <section class="page" id="page-add">
         <div class="add-tabs">
           <button class="add-tab active" data-tab="task">添加任务</button>
           <button class="add-tab" data-tab="inspiration">添加灵感</button>
         </div>
         <form class="add-form" id="add-form">
           <div class="form-group" id="board-select-group">
-            <label>所属分类</label>
+            <label>所属板块</label>
             <select class="form-select" id="entry-board"></select>
           </div>
           <div class="form-group">
@@ -130,16 +171,12 @@
             <label>日期</label>
             <input type="date" class="form-input" id="entry-date">
           </div>
-          <div style="display:none;">
-            <input type="radio" name="entry-type" value="task" checked>
-            <input type="radio" name="entry-type" value="inspiration">
-          </div>
           <button type="submit" class="btn-primary">保存</button>
         </form>
       </section>
 
       <!-- 设置页 -->
-      <section class="view" id="view-settings">
+      <section class="page" id="page-settings">
         <div class="settings-list">
           <div class="settings-card">
             <h3>📦 数据管理</h3>
@@ -158,52 +195,20 @@
           </div>
         </div>
       </section>
-    </main>
+    </div>
 
-    <!-- 底部导航 -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-nav="home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        <span>首页</span>
-      </button>
-      <button class="nav-item" data-nav="tasks">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-          <polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-        <span>任务</span>
-      </button>
-      <button class="nav-item nav-add" data-nav="add">
-        <div class="add-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </div>
-      </button>
-      <button class="nav-item" data-nav="inspirations">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-        <span>灵感</span>
-      </button>
-      <button class="nav-item" data-nav="weekly">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-          <line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/>
-          <line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/>
-          <line x1="12" y1="18" x2="12" y2="18"/>
-        </svg>
-        <span>复盘</span>
-      </button>
-    </nav>
+    <!-- 悬浮添加按钮 -->
+    <button class="fab" id="fab" aria-label="添加">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
   </div>
 
-  <div class="toast" id="toast"></div>
   <script src="js/app.js"></script>
 </body>
 </html>
