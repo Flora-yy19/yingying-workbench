@@ -37,7 +37,7 @@
     <!-- 页面容器 -->
     <div class="page-container" id="page-container">
 
-      <!-- 顶部栏（带菜单按钮） -->
+      <!-- 顶部栏 -->
       <header class="topbar">
         <button class="menu-btn" id="menu-btn" aria-label="菜单">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -49,10 +49,8 @@
         <h2 class="topbar-title" id="topbar-title">影影的工作台</h2>
         <button class="icon-btn sync-btn" id="sync-btn" aria-label="同步">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-            <path d="M16 21h5v-5"/>
+            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/>
           </svg>
         </button>
       </header>
@@ -79,8 +77,7 @@
       <section class="page" id="page-daily">
         <div class="page-card">
           <div class="page-header">
-            <span class="page-icon">☀️</span>
-            <h3>每日计划</h3>
+            <span class="page-icon">☀️</span><h3>每日计划</h3>
           </div>
           <div class="task-list" id="daily-tasks"></div>
         </div>
@@ -88,6 +85,33 @@
 
       <!-- 灵感抓取 -->
       <section class="page" id="page-inspo">
+        <!-- 抖音链接粘贴入口 -->
+        <div class="douyin-link-box" id="douyin-link-box">
+          <div class="douyin-link-row">
+            <input type="text" class="douyin-link-input" id="douyin-link-input"
+              placeholder="粘贴抖音分享链接，自动提取灵感...">
+            <button class="douyin-link-btn" id="douyin-link-btn">提取</button>
+          </div>
+          <p class="douyin-link-hint">在抖音点「分享」→「复制链接」，粘贴到此处</p>
+          <div class="douyin-status" id="douyin-status" style="display:none;"></div>
+        </div>
+
+        <!-- 提取结果预览卡片 -->
+        <div class="douyin-result-card" id="douyin-result-card" style="display:none;">
+          <div class="douyin-result-header">
+            <span class="douyin-result-type" id="douyin-result-type"></span>
+            <span class="douyin-result-confidence" id="douyin-result-confidence"></span>
+          </div>
+          <p class="douyin-result-title" id="douyin-result-title"></p>
+          <p class="douyin-result-summary" id="douyin-result-summary"></p>
+          <div class="douyin-result-tags" id="douyin-result-tags"></div>
+          <div class="douyin-result-actions">
+            <button class="btn-primary" id="douyin-save-btn">保存到灵感库</button>
+            <button class="btn-secondary" id="douyin-edit-btn">手动编辑</button>
+            <button class="btn-secondary" id="douyin-cancel-btn">取消</button>
+          </div>
+        </div>
+
         <div class="filter-bar" id="inspo-filter"></div>
         <div class="inspo-list" id="inspo-list"></div>
       </section>
@@ -118,10 +142,7 @@
       <!-- 英语学习 -->
       <section class="page" id="page-english">
         <div class="page-card">
-          <div class="page-header">
-            <span class="page-icon">🌿</span>
-            <h3>英语学习</h3>
-          </div>
+          <div class="page-header"><span class="page-icon">🌿</span><h3>英语学习</h3></div>
           <div class="task-list" id="english-tasks"></div>
         </div>
       </section>
@@ -129,10 +150,7 @@
       <!-- 剪辑练习 -->
       <section class="page" id="page-edit">
         <div class="page-card">
-          <div class="page-header">
-            <span class="page-icon">🎬</span>
-            <h3>剪辑练习</h3>
-          </div>
+          <div class="page-header"><span class="page-icon">🎬</span><h3>剪辑练习</h3></div>
           <div class="task-list" id="edit-tasks"></div>
         </div>
       </section>
@@ -140,10 +158,7 @@
       <!-- 修图练习 -->
       <section class="page" id="page-photo">
         <div class="page-card">
-          <div class="page-header">
-            <span class="page-icon">🖼️</span>
-            <h3>修图练习</h3>
-          </div>
+          <div class="page-header"><span class="page-icon">🖼️</span><h3>修图练习</h3></div>
           <div class="task-list" id="photo-tasks"></div>
         </div>
       </section>
@@ -186,8 +201,8 @@
             <input type="file" id="import-file" accept=".json" hidden>
           </div>
           <div class="settings-card">
-            <h3>🔗 灵感自动抓取</h3>
-            <p class="settings-desc">抖音 likes / 收藏的自动同步需要抖音开放平台授权或浏览器插件。当前版本为手动录入。后续可通过服务端脚本接入。</p>
+            <h3>🔗 抖音灵感抓取</h3>
+            <p class="settings-desc">在灵感页面粘贴抖音分享链接，系统会尝试提取视频信息并自动分类。如抓取失败，可以手动填写内容。</p>
           </div>
           <div class="settings-card">
             <h3>⚠️ 危险操作</h3>
@@ -197,18 +212,48 @@
       </section>
     </div>
 
-    <!-- 悬浮添加按钮 -->
-    <button class="fab" id="fab" aria-label="添加">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-    </button>
-
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-nav="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>首页</span>
+      </button>
+      <button class="nav-item" data-nav="daily">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>任务</span>
+      </button>
+      <button class="nav-item nav-add" data-nav="add">
+        <div class="add-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+      </button>
+      <button class="nav-item" data-nav="inspo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>灵感</span>
+      </button>
+      <button class="nav-item" data-nav="weekly">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>复盘</span>
+      </button>
+    </nav>
   </div>
 
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
   <script src="js/app.js"></script>
 </body>
 </html>

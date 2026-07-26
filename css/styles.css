@@ -252,6 +252,100 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: var(--font); back
 .delete-btn:active { color: #b08a84; background: rgba(196,160,154,0.1); }
 .delete-btn svg { width: 16px; height: 16px; }
 
+/* ===== 抖音链接入口 ===== */
+.douyin-link-box {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 16px; box-shadow: var(--shadow); margin-bottom: 16px;
+}
+
+.douyin-link-row {
+  display: flex; gap: 8px;
+}
+
+.douyin-link-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 14px; font-size: 14px; font-family: inherit;
+  color: var(--text); background: var(--bg);
+}
+
+.douyin-link-input:focus { outline: none; border-color: var(--rose); box-shadow: 0 0 0 3px var(--rose-pale); }
+
+.douyin-link-input::placeholder { color: var(--text-muted); font-size: 13px; }
+
+.douyin-link-btn {
+  flex-shrink: 0; background: var(--rose); color: #fff;
+  border: none; border-radius: 12px; padding: 10px 18px;
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: background 0.2s ease;
+}
+
+.douyin-link-btn:active { background: #b0908a; }
+.douyin-link-btn.loading { opacity: 0.7; pointer-events: none; }
+
+.douyin-link-hint {
+  font-size: 11px; color: var(--text-muted);
+  margin: 8px 0 0; text-align: center;
+}
+
+.douyin-status {
+  margin-top: 10px; padding: 10px 14px;
+  border-radius: 10px; font-size: 13px; text-align: center;
+  background: var(--surface-2); color: var(--text-muted);
+}
+
+.douyin-status.loading { background: var(--rose-pale); color: var(--rose); }
+.douyin-status.success { background: var(--green-pale); color: var(--green); }
+.douyin-status.error { background: #fce8e6; color: #c4a09a; }
+
+/* 抖音提取结果卡片 */
+.douyin-result-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow-md); margin-bottom: 16px;
+  border: 2px solid var(--rose-light);
+  animation: fadeIn 0.3s ease;
+}
+
+.douyin-result-header {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 12px;
+}
+
+.douyin-result-type {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+  padding: 4px 10px; border-radius: 999px;
+}
+
+.douyin-result-confidence {
+  font-size: 11px; color: var(--text-muted);
+}
+
+.douyin-result-title {
+  font-size: 16px; font-weight: 600; line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.douyin-result-summary {
+  font-size: 13px; color: var(--text-muted);
+  line-height: 1.6; margin: 0 0 12px;
+}
+
+.douyin-result-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 14px;
+}
+
+.douyin-result-tag {
+  background: var(--surface-2); border-radius: 999px;
+  padding: 4px 10px; font-size: 11px; color: var(--text-muted);
+}
+
+.douyin-result-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+.douyin-result-actions .btn-primary { flex: 1; min-width: 100px; }
+.douyin-result-actions .btn-secondary { flex: 1; min-width: 80px; padding: 12px; }
+
 /* ===== 灵感抓取 ===== */
 .filter-bar {
   display: flex; gap: 8px; overflow-x: auto;
@@ -413,19 +507,44 @@ html, body { margin: 0; padding: 0; height: 100%; font-family: var(--font); back
 .settings-card h3 { font-size: 16px; margin: 0 0 8px; }
 .settings-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 0 0 14px; }
 
-/* ===== 悬浮添加按钮 ===== */
-.fab {
-  position: fixed; bottom: 24px; right: 24px;
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--sage); color: #fff; border: none;
+/* ===== 底部导航 ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px; height: 74px;
+  background: rgba(253, 252, 249, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around;
+  align-items: flex-start; padding-top: 8px; z-index: 100;
+}
+
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  background: none; border: none;
+  color: var(--text-muted); font-size: 10px; font-family: inherit;
+  cursor: pointer; transition: color 0.2s ease; padding: 4px 0;
+}
+
+.nav-item svg { width: 22px; height: 22px; }
+
+.nav-item.active { color: var(--sage); }
+
+.nav-item.nav-add { position: relative; top: -16px; }
+
+.add-circle {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--sage); color: #fff;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 6px 20px rgba(139, 157, 131, 0.35);
-  cursor: pointer; z-index: 50;
+  box-shadow: 0 6px 20px rgba(139, 157, 131, 0.3);
   transition: transform 0.15s ease;
 }
 
-.fab:active { transform: scale(0.92); }
-.fab svg { width: 24px; height: 24px; }
+.add-circle:active { transform: scale(0.92); }
+.add-circle svg { width: 24px; height: 24px; }
+
+/* ===== 隐藏 fab（已被底部导航替代） ===== */
+.fab { display: none; }
 
 /* ===== 空状态 ===== */
 .empty-state {
