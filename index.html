@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#f5f0eb">
+  <title>影影的工作台</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部栏 -->
+    <header class="app-header">
+      <div class="header-left">
+        <h1 class="app-title">影影的工作台</h1>
+        <p class="app-date" id="current-date">--</p>
+      </div>
+      <button class="icon-btn" id="sync-btn" aria-label="同步">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+          <path d="M16 21h5v-5"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="app-main" id="app-main">
+
+      <!-- 首页 -->
+      <section class="view active" id="view-home">
+        <div class="greeting-card">
+          <div class="greeting-text">
+            <p class="greeting-hello">今天也是创作的一天 ☁️</p>
+            <h2 class="greeting-sub">影影，<br>先完成今日计划吧</h2>
+          </div>
+          <div class="progress-ring">
+            <svg viewBox="0 0 36 36">
+              <path class="progress-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path id="progress-circle" class="progress-ring-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <span class="progress-text" id="progress-text">0%</span>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h3>📋 今日任务</h3>
+          <button class="text-link" data-nav="tasks">全部板块 →</button>
+        </div>
+
+        <div class="task-list" id="home-tasks"></div>
+
+        <div class="section-header">
+          <h3>🗂 我的板块</h3>
+        </div>
+
+        <div class="board-grid" id="board-grid"></div>
+      </section>
+
+      <!-- 任务页（按板块） -->
+      <section class="view" id="view-tasks">
+        <div class="category-list" id="board-list"></div>
+        <div class="task-detail-area" id="task-detail-area">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+            <p>选择一个板块，查看今日任务</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 灵感抓取页 -->
+      <section class="view" id="view-inspirations">
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="quote">语录金句</button>
+          <button class="filter-btn" data-filter="copy">文案灵感</button>
+          <button class="filter-btn" data-filter="visual">视觉参考</button>
+          <button class="filter-btn" data-filter="music">音乐/BGM</button>
+          <button class="filter-btn" data-filter="topic">爆款选题</button>
+          <button class="filter-btn" data-filter="comment">评论素材</button>
+        </div>
+        <div class="inspo-list" id="inspo-list"></div>
+      </section>
+
+      <!-- 周周复盘页 -->
+      <section class="view" id="view-weekly">
+        <div class="weekly-week-selector">
+          <button id="week-prev">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="weekly-week-label" id="weekly-week-label">--</span>
+          <button id="week-next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div id="weekly-content"></div>
+      </section>
+
+      <!-- 添加页 -->
+      <section class="view" id="view-add">
+        <div class="add-tabs">
+          <button class="add-tab active" data-tab="task">添加任务</button>
+          <button class="add-tab" data-tab="inspiration">添加灵感</button>
+        </div>
+        <form class="add-form" id="add-form">
+          <div class="form-group" id="board-select-group">
+            <label>所属分类</label>
+            <select class="form-select" id="entry-board"></select>
+          </div>
+          <div class="form-group">
+            <label>标题</label>
+            <input type="text" class="form-input" id="entry-title" placeholder="输入标题" required>
+          </div>
+          <div class="form-group">
+            <label>备注 / 链接 / 详情</label>
+            <textarea class="form-textarea" id="entry-desc" rows="4" placeholder="粘贴链接、复制文案或写下备注"></textarea>
+          </div>
+          <div class="form-group" id="date-group">
+            <label>日期</label>
+            <input type="date" class="form-input" id="entry-date">
+          </div>
+          <div style="display:none;">
+            <input type="radio" name="entry-type" value="task" checked>
+            <input type="radio" name="entry-type" value="inspiration">
+          </div>
+          <button type="submit" class="btn-primary">保存</button>
+        </form>
+      </section>
+
+      <!-- 设置页 -->
+      <section class="view" id="view-settings">
+        <div class="settings-list">
+          <div class="settings-card">
+            <h3>📦 数据管理</h3>
+            <p class="settings-desc">当前为本地存储模式。可导出 JSON 备份，也可导入恢复。</p>
+            <button class="btn-secondary" id="export-btn">导出数据</button>
+            <button class="btn-secondary" id="import-btn">导入数据</button>
+            <input type="file" id="import-file" accept=".json" hidden>
+          </div>
+          <div class="settings-card">
+            <h3>🔗 灵感自动抓取</h3>
+            <p class="settings-desc">抖音 likes / 收藏的自动同步需要抖音开放平台授权或浏览器插件。当前版本为手动录入。后续可通过服务端脚本接入。</p>
+          </div>
+          <div class="settings-card">
+            <h3>⚠️ 危险操作</h3>
+            <button class="btn-danger" id="clear-btn">清空所有数据</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-nav="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>首页</span>
+      </button>
+      <button class="nav-item" data-nav="tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>任务</span>
+      </button>
+      <button class="nav-item nav-add" data-nav="add">
+        <div class="add-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+      </button>
+      <button class="nav-item" data-nav="inspirations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>灵感</span>
+      </button>
+      <button class="nav-item" data-nav="weekly">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/>
+          <line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/>
+          <line x1="12" y1="18" x2="12" y2="18"/>
+        </svg>
+        <span>复盘</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
