@@ -5,292 +5,543 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#f5f0eb">
+  <meta name="theme-color" content="#FBF8FE">
   <title>影影的工作台</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div id="app">
-    <!-- 侧边栏 -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-avatar">影</div>
-        <div class="sidebar-user">
-          <div class="sidebar-name">影影的工作台</div>
-          <div class="sidebar-date" id="current-date">--</div>
-        </div>
+
+<!-- ===== 可爱娃娃头头像（SVG 复用） ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="doll" viewBox="0 0 100 100">
+      <path d="M50 8C29 8 16 23 16 44v18c0 6 3 10 8 11l3-42h46l3 42c5-1 8-5 8-11V44C84 23 71 8 50 8z" fill="#F3C64B"/>
+      <ellipse cx="24" cy="52" rx="6" ry="8" fill="#FCE0CB"/>
+      <ellipse cx="76" cy="52" rx="6" ry="8" fill="#FCE0CB"/>
+      <path d="M50 20c-16 0-26 11-26 27 0 17 12 30 26 30s26-13 26-30c0-16-10-27-26-27z" fill="#FDEAD8"/>
+      <path d="M50 10C31 10 20 22 20 40c0 4 .6 7 1.6 9 1.4-9 5-14 9-16 3.6 5 11 8 19.4 8s15.8-3 19.4-8c4 2 7.6 7 9 16 1-2 1.6-5 1.6-9 0-18-11-30-30-30z" fill="#F5D052"/>
+      <path d="M50 10c1-4 4-6 6-5 2 1 1 4-1 5.5" stroke="#F3C64B" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <ellipse cx="39" cy="49" rx="4.2" ry="5" fill="#4B4459"/>
+      <ellipse cx="61" cy="49" rx="4.2" ry="5" fill="#4B4459"/>
+      <circle cx="40.6" cy="47.2" r="1.5" fill="#fff"/>
+      <circle cx="62.6" cy="47.2" r="1.5" fill="#fff"/>
+      <ellipse cx="32" cy="57" rx="5" ry="3.2" fill="#F9C4CB" opacity=".8"/>
+      <ellipse cx="68" cy="57" rx="5" ry="3.2" fill="#F9C4CB" opacity=".8"/>
+      <path d="M46 60c1.6 2.4 6.4 2.4 8 0" stroke="#D99A9A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M50 78c-13 0-23 6-25 15-.5 2 .8 3 2.6 3h44.8c1.8 0 3.1-1 2.6-3-2-9-12-15-25-15z" fill="#C9AFE8"/>
+      <path d="M50 78c-3 0-5.8.3-8.4.9L50 88l8.4-9.1c-2.6-.6-5.4-.9-8.4-.9z" fill="#DCCBF0"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ===== 封面欢迎页 ===== -->
+<div class="cover" id="cover">
+  <div class="cover-blob b1"></div>
+  <div class="cover-blob b2"></div>
+  <div class="cover-blob b3"></div>
+  <div class="cover-blob b4"></div>
+  <span class="cover-sparkle" style="top:16%;right:20%">✦</span>
+  <span class="cover-sparkle" style="top:30%;left:15%;animation-delay:.9s">✧</span>
+  <span class="cover-sparkle" style="bottom:30%;right:16%;animation-delay:1.7s">✦</span>
+  <span class="cover-sparkle" style="bottom:38%;left:22%;animation-delay:2.4s">·</span>
+  <div class="cover-inner">
+    <div class="cover-badge"><span class="dot"></span>WELCOME</div>
+    <svg class="cover-avatar"><use href="#doll"/></svg>
+    <h1 class="cover-hello">欢 迎</h1>
+    <p class="cover-name">影影的工作台</p>
+    <p class="cover-quote" id="cover-quote">慢慢来，比较快 ☁️</p>
+    <button class="cover-enter" id="cover-enter">进 入</button>
+  </div>
+  <div class="cover-date" id="cover-date">--</div>
+</div>
+
+<div id="app">
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <svg class="sidebar-avatar"><use href="#doll"/></svg>
+      <div>
+        <div class="sidebar-name">影影的工作台</div>
+        <div class="sidebar-date" id="sidebar-date">--</div>
       </div>
-      <nav class="sidebar-nav" id="sidebar-nav"></nav>
-      <div class="sidebar-footer">
-        <button class="sidebar-item" data-page="settings">
-          <span class="sidebar-icon">⚙️</span><span class="sidebar-label">设置</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- 页面容器 -->
-    <div class="page-container" id="page-container">
-      <header class="topbar">
-        <button class="menu-btn" id="menu-btn" aria-label="菜单">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
-          </svg>
-        </button>
-        <h2 class="topbar-title" id="topbar-title">影影的工作台</h2>
-        <button class="icon-btn sync-btn" id="sync-btn" aria-label="同步">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
-            <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/>
-          </svg>
-        </button>
-      </header>
-
-      <!-- 首页 -->
-      <section class="page active" id="page-home">
-        <div class="greeting-card">
-          <div class="greeting-text">
-            <p class="greeting-hello">今天也是创作的一天 ☁️</p>
-            <h2 class="greeting-sub">影影，<br>先完成今日计划吧</h2>
-          </div>
-          <div class="progress-ring">
-            <svg viewBox="0 0 36 36">
-              <path class="progress-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              <path id="progress-circle" class="progress-ring-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            </svg>
-            <span class="progress-text" id="progress-text">0%</span>
-          </div>
-        </div>
-        <div class="home-shortcuts" id="home-shortcuts"></div>
-      </section>
-
-      <!-- 每日计划 -->
-      <section class="page" id="page-daily">
-        <div class="page-card">
-          <div class="page-header"><span class="page-icon">☀️</span><h3>每日计划</h3></div>
-          <div class="task-list" id="daily-tasks"></div>
-        </div>
-      </section>
-
-      <!-- 选题灵感 -->
-      <section class="page" id="page-topic">
-        <div class="hub-header">
-          <span class="hub-icon">🔥</span>
-          <h3>选题灵感</h3>
-          <p class="hub-desc">爆款拆解 · 选题库 · 热点追踪</p>
-        </div>
-        <!-- 推荐视频区 -->
-        <div class="hub-section">
-          <div class="hub-section-title">📺 推荐视频</div>
-          <div class="resource-list" id="topic-recommend"></div>
-        </div>
-        <!-- 我的收藏 -->
-        <div class="hub-section">
-          <div class="hub-section-title">📌 我的选题库</div>
-          <div class="resource-list" id="topic-mine"></div>
-        </div>
-        <!-- 今日练习任务 -->
-        <div class="hub-section">
-          <div class="hub-section-title">✅ 今日任务</div>
-          <div class="task-list" id="topic-tasks"></div>
-        </div>
-      </section>
-
-      <!-- 灵感抓取 -->
-      <section class="page" id="page-inspo">
-        <div class="douyin-link-box" id="douyin-link-box">
-          <div class="douyin-link-row">
-            <input type="text" class="douyin-link-input" id="douyin-link-input" placeholder="粘贴抖音/小红书/B站分享链接...">
-            <button class="douyin-link-btn" id="douyin-link-btn">提取</button>
-          </div>
-          <p class="douyin-link-hint">支持抖音、小红书、B站链接，粘贴后手动填入金句/文案，自动分类</p>
-        </div>
-        <div class="douyin-result-card" id="douyin-result-card" style="display:none;"></div>
-        <div class="filter-bar" id="inspo-filter"></div>
-        <div class="inspo-list" id="inspo-list"></div>
-      </section>
-
-      <!-- 周周复盘 -->
-      <section class="page" id="page-weekly">
-        <div class="weekly-week-selector">
-          <button id="week-prev">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-          <span class="weekly-week-label" id="weekly-week-label">--</span>
-          <button id="week-next">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-        <div id="weekly-content"></div>
-      </section>
-
-      <!-- 英语学习 -->
-      <section class="page" id="page-english">
-        <div class="hub-header">
-          <span class="hub-icon">🌿</span><h3>英语学习</h3>
-          <p class="hub-desc">视频教程 · 单词打卡 · 听力练习</p>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">📺 推荐视频</div>
-          <div class="resource-list" id="english-recommend"></div>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">📌 我的学习资料</div>
-          <div class="resource-list" id="english-mine"></div>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">✅ 今日任务</div>
-          <div class="task-list" id="english-tasks"></div>
-        </div>
-      </section>
-
-      <!-- 剪辑练习 -->
-      <section class="page" id="page-edit">
-        <div class="hub-header">
-          <span class="hub-icon">🎬</span><h3>剪辑练习</h3>
-          <p class="hub-desc">教程 · 案例拆解 · 转场练习</p>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">📺 推荐视频</div>
-          <div class="resource-list" id="edit-recommend"></div>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">📌 我的素材库</div>
-          <div class="resource-list" id="edit-mine"></div>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">✅ 今日任务</div>
-          <div class="task-list" id="edit-tasks"></div>
-        </div>
-      </section>
-
-      <!-- 修图练习 -->
-      <section class="page" id="page-photo">
-        <div class="hub-header">
-          <span class="hub-icon">🖼️</span><h3>修图练习</h3>
-          <p class="hub-desc">调色教程 · 构图参考 · 素材练习</p>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">📺 推荐视频</div>
-          <div class="resource-list" id="photo-recommend"></div>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">📌 我的素材库</div>
-          <div class="resource-list" id="photo-mine"></div>
-        </div>
-        <div class="hub-section">
-          <div class="hub-section-title">✅ 今日任务</div>
-          <div class="task-list" id="photo-tasks"></div>
-        </div>
-      </section>
-
-      <!-- 添加页 -->
-      <section class="page" id="page-add">
-        <div class="add-tabs">
-          <button class="add-tab active" data-tab="task">添加任务</button>
-          <button class="add-tab" data-tab="resource">添加学习资料</button>
-          <button class="add-tab" data-tab="inspiration">添加灵感</button>
-        </div>
-        <form class="add-form" id="add-form">
-          <div class="form-group" id="board-select-group">
-            <label>所属板块</label>
-            <select class="form-select" id="entry-board"></select>
-          </div>
-          <div class="form-group" id="resource-type-group" style="display:none;">
-            <label>类型</label>
-            <select class="form-select" id="resource-type">
-              <option value="video">视频链接</option>
-              <option value="image">图片/截图</option>
-              <option value="article">文章/笔记</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>标题</label>
-            <input type="text" class="form-input" id="entry-title" placeholder="输入标题" required>
-          </div>
-          <div class="form-group">
-            <label id="desc-label">链接 / 文案 / 备注</label>
-            <textarea class="form-textarea" id="entry-desc" rows="4" placeholder="粘贴视频链接、图片链接或写下内容..."></textarea>
-          </div>
-          <div class="form-group" id="platform-group" style="display:none;">
-            <label>来源平台</label>
-            <select class="form-select" id="entry-platform">
-              <option value="douyin">抖音</option>
-              <option value="xiaohongshu">小红书</option>
-              <option value="bilibili">B站</option>
-              <option value="other">其他</option>
-            </select>
-          </div>
-          <div class="form-group" id="date-group">
-            <label>日期</label>
-            <input type="date" class="form-input" id="entry-date">
-          </div>
-          <button type="submit" class="btn-primary">保存</button>
-        </form>
-      </section>
-
-      <!-- 设置页 -->
-      <section class="page" id="page-settings">
-        <div class="settings-list">
-          <div class="settings-card">
-            <h3>📦 数据管理</h3>
-            <p class="settings-desc">当前为本地存储模式。可导出 JSON 备份，也可导入恢复。</p>
-            <button class="btn-secondary" id="export-btn">导出数据</button>
-            <button class="btn-secondary" id="import-btn">导入数据</button>
-            <input type="file" id="import-file" accept=".json" hidden>
-          </div>
-          <div class="settings-card">
-            <h3>🔗 灵感抓取</h3>
-            <p class="settings-desc">在灵感页面粘贴抖音/小红书/B站分享链接，填入金句文案后自动分类保存。</p>
-          </div>
-          <div class="settings-card">
-            <h3>⚠️ 危险操作</h3>
-            <button class="btn-danger" id="clear-btn">清空所有数据</button>
-          </div>
-        </div>
-      </section>
     </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-item" data-page="settings">
+        <span class="sidebar-icon">⚙️</span><span class="sidebar-label">设置</span>
+      </button>
+    </div>
+  </aside>
 
-    <!-- 底部导航 -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-nav="home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+  <div class="page-container">
+    <header class="topbar">
+      <button class="menu-btn" id="menu-btn" aria-label="菜单">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/>
         </svg>
-        <span>首页</span>
       </button>
-      <button class="nav-item" data-nav="topic">
+      <h2 class="topbar-title" id="topbar-title">影影的工作台</h2>
+      <button class="icon-btn" id="cover-btn" aria-label="封面">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          <path d="M12 3l2.4 5.4 5.6.5-4.3 3.8 1.3 5.6L12 15.4 7 18.3l1.3-5.6L4 8.9l5.6-.5z"/>
         </svg>
-        <span>选题</span>
       </button>
-      <button class="nav-item nav-add" data-nav="add">
-        <div class="add-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+    </header>
+
+    <section class="page active" id="page-home">
+      <div class="greeting-card">
+        <svg class="greeting-avatar"><use href="#doll"/></svg>
+        <div class="greeting-text">
+          <p class="greeting-hello" id="home-hello">今天也要开开心心 ☁️</p>
+          <h2 class="greeting-sub" id="home-sub">影影<br>今天想先做什么？</h2>
         </div>
-      </button>
-      <button class="nav-item" data-nav="inspo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-        <span>灵感</span>
-      </button>
-      <button class="nav-item" data-nav="weekly">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        <span>复盘</span>
-      </button>
-    </nav>
+        <div class="progress-ring">
+          <svg viewBox="0 0 36 36">
+            <path class="progress-ring-bg" d="M18 2.08a15.92 15.92 0 010 31.84 15.92 15.92 0 010-31.84"/>
+            <path id="progress-circle" class="progress-ring-fill" stroke-dasharray="0,100" d="M18 2.08a15.92 15.92 0 010 31.84 15.92 15.92 0 010-31.84"/>
+          </svg>
+          <span class="progress-text" id="progress-text">0%</span>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="n" id="st-task">0</div><div class="l">今日任务</div></div>
+        <div class="stat-box"><div class="n" id="st-focus">0</div><div class="l">专注分钟</div></div>
+        <div class="stat-box"><div class="n" id="st-streak">0</div><div class="l">连续打卡</div></div>
+      </div>
+      <div class="sec-title"><span class="em">🧺</span>全部板块</div>
+      <div class="home-grid" id="home-grid"></div>
+    </section>
+
+    <section class="page" id="page-daily">
+      <div class="page-hero">
+        <h3><span>☀️</span>每日计划</h3>
+        <p>一天做好三件事，就很棒了</p>
+      </div>
+      <div class="card">
+        <form id="quick-task-form" class="form-row" style="margin:0">
+          <input type="text" class="form-input" id="quick-task-input" placeholder="添加今天要做的事…">
+          <button type="submit" class="btn-primary" style="flex:0 0 76px;padding:12px 0;font-size:14px">添加</button>
+        </form>
+      </div>
+      <div class="sec-title"><span class="em">📋</span>今日清单<span class="more" id="daily-count"></span></div>
+      <div class="task-list" id="daily-tasks"></div>
+      <div class="sec-title" style="margin-top:18px"><span class="em">🌙</span>已完成</div>
+      <div class="task-list" id="daily-done"></div>
+    </section>
+
+    <section class="page" id="page-topic">
+      <div class="page-hero">
+        <h3><span>🔥</span>选题灵感</h3>
+        <p>小红书 · 抖音｜大学生博主能拍的热门选题</p>
+      </div>
+      <div class="plat-tabs" id="topic-tabs">
+        <button class="plat-tab active" data-plat="xhs">📕 小红书</button>
+        <button class="plat-tab" data-plat="dy">🎵 抖音</button>
+        <button class="plat-tab" data-plat="mine">⭐ 我收藏的</button>
+      </div>
+      <div id="topic-list"></div>
+    </section>
+
+    <section class="page" id="page-inspo">
+      <div class="page-hero">
+        <h3><span>🌱</span>灵感抓取</h3>
+        <p>刷到的金句、文案、评论，随手存下来</p>
+      </div>
+      <div class="card">
+        <div class="form-group">
+          <label>灵感内容</label>
+          <textarea class="form-textarea" id="inspo-text" rows="3" placeholder="粘贴或写下金句、文案、评论…"></textarea>
+        </div>
+        <div class="form-row" style="margin-bottom:12px">
+          <select class="form-select" id="inspo-type"></select>
+          <select class="form-select" id="inspo-src">
+            <option value="douyin">抖音</option>
+            <option value="xhs">小红书</option>
+            <option value="life">生活</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <button class="btn-primary" id="inspo-save">存下这条灵感</button>
+      </div>
+      <div class="filter-bar" id="inspo-filter"></div>
+      <div id="inspo-list"></div>
+    </section>
+
+    <section class="page" id="page-english">
+      <div class="timer-hero">
+        <div class="timer-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="tr-bg" cx="50" cy="50" r="44"/>
+            <circle class="tr-fill" id="en-ring" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-num">
+            <div class="tt" id="en-time">10:00</div>
+            <div class="ts" id="en-state">进入即开始</div>
+          </div>
+        </div>
+        <div class="timer-ctrl">
+          <button class="timer-btn main" id="en-toggle">暂停</button>
+          <button class="timer-btn" id="en-reset">重置</button>
+          <button class="timer-btn" id="en-setmin">时长</button>
+        </div>
+      </div>
+      <div class="seg" id="en-seg">
+        <button class="active" data-tab="sentence">📮 每日短句</button>
+        <button data-tab="word">🔤 单词</button>
+        <button data-tab="speak">🎙 口语</button>
+      </div>
+      <div id="en-tab-sentence">
+        <div class="sentence-card" id="en-sentence"></div>
+        <div class="sec-title"><span class="em">📝</span>我自己加的内容</div>
+        <div class="card">
+          <div class="form-row" style="margin-bottom:10px">
+            <input type="text" class="form-input" id="en-my-en" placeholder="英文内容">
+          </div>
+          <div class="form-row" style="margin-bottom:10px">
+            <input type="text" class="form-input" id="en-my-cn" placeholder="中文意思（可留空）">
+          </div>
+          <button class="btn-primary" id="en-my-add">加入我的短句库</button>
+        </div>
+        <div id="en-my-list"></div>
+      </div>
+      <div id="en-tab-word" style="display:none">
+        <div class="card">
+          <div class="row-between" style="margin-bottom:12px">
+            <div class="sec-title mb0"><span class="em">🔤</span>今日四级词</div>
+            <button class="btn-ghost" id="en-word-refresh">换一组</button>
+          </div>
+          <div class="word-grid" id="en-words"></div>
+          <p class="muted center" style="margin-top:12px">点一下卡片＝已掌握</p>
+        </div>
+      </div>
+      <div id="en-tab-speak" style="display:none">
+        <div class="speak-box">
+          <div class="sec-title"><span class="em">🎙</span>跟读练习</div>
+          <div class="speak-text" id="speak-text">Loading…</div>
+          <button class="speak-mic" id="speak-mic">🎤</button>
+          <div class="speak-score" id="speak-score"></div>
+          <div class="speak-result" id="speak-result">点麦克风开始朗读</div>
+          <div class="form-row" style="margin-top:14px">
+            <button class="btn-ghost" id="speak-play" style="flex:1">🔊 听发音</button>
+            <button class="btn-ghost" id="speak-next" style="flex:1">下一句 →</button>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="sec-title"><span class="em">🗓</span>本周学习打卡</div>
+        <div class="streak-bar" id="en-streak"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-focus">
+      <div class="focus-stage">
+        <div class="f-blob a"></div><div class="f-blob b"></div>
+        <div class="focus-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="fr-bg" cx="50" cy="50" r="44"/>
+            <circle class="fr-fill" id="fc-ring" cx="50" cy="50" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5"/>
+          </svg>
+          <div class="focus-num">
+            <div class="fe" id="fc-emoji">🌱</div>
+            <div class="ft" id="fc-time">25:00</div>
+            <div class="fs" id="fc-state">准备好了吗</div>
+          </div>
+        </div>
+        <div class="focus-presets" id="fc-presets"></div>
+        <div class="timer-ctrl">
+          <button class="timer-btn main" id="fc-toggle">开始专注</button>
+          <button class="timer-btn" id="fc-give">放弃</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">🏷</span>这次专注做什么</div>
+        <input type="text" class="form-input" id="fc-label" placeholder="例如：写论文 / 背单词 / 剪视频">
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="n" id="fc-today">0</div><div class="l">今日专注</div></div>
+        <div class="stat-box"><div class="n" id="fc-count">0</div><div class="l">完成次数</div></div>
+        <div class="stat-box"><div class="n" id="fc-total">0</div><div class="l">累计小时</div></div>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">🏅</span>我的奖励徽章</div>
+        <div class="badge-grid" id="fc-badges"></div>
+      </div>
+      <div class="sec-title"><span class="em">📖</span>专注记录</div>
+      <div id="fc-log"></div>
+    </section>
+    <!-- ========== 情绪日记 ========== -->
+    <section class="page" id="page-mood">
+      <div class="page-hero">
+        <h3><span>🫧</span>情绪日记</h3>
+        <p>今天的心情，也值得被好好记下</p>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">💭</span>今天心情怎么样</div>
+        <div class="mood-picker" id="mood-picker"></div>
+        <div class="sec-title"><span class="em">🔖</span>因为什么呢</div>
+        <div class="reason-chips" id="mood-reasons"></div>
+        <div class="form-group" style="margin-top:14px">
+          <label>还想说点什么</label>
+          <textarea class="form-textarea" id="mood-note" rows="3" placeholder="写给自己的一段话…"></textarea>
+        </div>
+        <button class="btn-primary" id="mood-save">记录今天</button>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">📈</span>近 14 天心情</div>
+        <div class="mood-chart" id="mood-chart"></div>
+      </div>
+      <div class="sec-title"><span class="em">🗂</span>我的心情记录</div>
+      <div id="mood-list"></div>
+    </section>
+
+    <!-- ========== 表达力 ========== -->
+    <section class="page" id="page-express">
+      <div class="express-topic">
+        <span class="et-tag">今日话题</span>
+        <div class="et-q" id="ex-topic">--</div>
+        <div class="et-h" id="ex-hint">--</div>
+      </div>
+      <div class="card">
+        <div class="row-between" style="margin-bottom:10px">
+          <div class="sec-title mb0"><span class="em">✍️</span>我的表达</div>
+          <button class="btn-ghost" id="ex-change">换个话题</button>
+        </div>
+        <textarea class="form-textarea" id="ex-input" rows="7" placeholder="围绕话题说一段话，越具体越好…"></textarea>
+        <p class="muted" id="ex-count" style="margin:6px 0 12px">0 字</p>
+        <button class="btn-primary" id="ex-submit">让系统点评一下</button>
+      </div>
+      <div id="ex-feedback"></div>
+      <div class="sec-title"><span class="em">📚</span>历史练习</div>
+      <div id="ex-history"></div>
+    </section>
+
+    <!-- ========== 美食 ========== -->
+    <section class="page" id="page-food">
+      <div class="page-hero">
+        <h3><span>🍰</span>美食日记</h3>
+        <p>好吃的都要拍下来，做成贴纸收集</p>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">📷</span>记一顿好吃的</div>
+        <label for="food-file" class="img-drop" id="food-drop">
+          <span class="id-i">🖼️</span>点这里拍照 / 选一张图
+        </label>
+        <input type="file" id="food-file" accept="image/*" hidden>
+        <img class="img-preview" id="food-preview" style="display:none">
+        <div class="form-row" style="margin:12px 0 10px">
+          <input type="text" class="form-input" id="food-name" placeholder="吃了什么">
+          <input type="text" class="form-input" id="food-price" placeholder="人均 ¥" inputmode="decimal">
+        </div>
+        <input type="text" class="form-input" id="food-shop" placeholder="在哪家店 / 哪里吃的" style="margin-bottom:10px">
+        <div class="form-group">
+          <label>好吃程度</label>
+          <div class="star-pick" id="food-stars"></div>
+        </div>
+        <textarea class="form-textarea" id="food-note" rows="2" placeholder="味道怎么样、下次还来吗…" style="margin-bottom:12px"></textarea>
+        <button class="btn-primary" id="food-save">做成贴纸卡</button>
+      </div>
+      <div class="sec-title"><span class="em">🧷</span>我的美食贴纸墙<span class="more" id="food-count"></span></div>
+      <div class="food-grid" id="food-grid"></div>
+    </section>
+
+    <!-- ========== 文学 ========== -->
+    <section class="page" id="page-lit">
+      <div class="page-hero">
+        <h3><span>📖</span>文学</h3>
+        <p>每天一句，来自那些好书</p>
+      </div>
+      <div class="seg" id="lit-seg">
+        <button class="active" data-cat="all">全部</button>
+        <button data-cat="poem">诗歌</button>
+        <button data-cat="prose">散文</button>
+        <button data-cat="novel">小说</button>
+        <button data-cat="mine">我的</button>
+      </div>
+      <div class="row-between" style="margin-bottom:12px">
+        <span class="muted" id="lit-tip">今日推送</span>
+        <button class="btn-ghost" id="lit-refresh">换一批</button>
+      </div>
+      <div id="lit-list"></div>
+      <div class="card" style="margin-top:6px">
+        <div class="sec-title"><span class="em">✒️</span>添加我喜欢的句子</div>
+        <textarea class="form-textarea" id="lit-q" rows="3" placeholder="摘抄一段打动你的话…" style="margin-bottom:10px"></textarea>
+        <div class="form-row" style="margin-bottom:10px">
+          <input type="text" class="form-input" id="lit-book" placeholder="出自哪本书">
+          <input type="text" class="form-input" id="lit-author" placeholder="作者">
+        </div>
+        <select class="form-select" id="lit-cat" style="margin-bottom:12px">
+          <option value="novel">小说</option>
+          <option value="poem">诗歌</option>
+          <option value="prose">散文</option>
+          <option value="other">其他</option>
+        </select>
+        <button class="btn-primary" id="lit-save">收进我的摘抄本</button>
+      </div>
+    </section>
+
+    <!-- ========== 记账 ========== -->
+    <section class="page" id="page-money">
+      <div class="money-hero">
+        <div class="money-month">
+          <button id="mo-prev">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="mm-label" id="mo-label">--</span>
+          <button id="mo-next">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="money-balance">
+          <div class="mb-l">本月结余</div>
+          <div class="mb-n" id="mo-balance">¥0.00</div>
+        </div>
+        <div class="money-io">
+          <div class="in"><div class="mi-l">收入</div><div class="mi-n" id="mo-in">0.00</div></div>
+          <div class="out"><div class="mi-l">支出</div><div class="mi-n" id="mo-out">0.00</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">➕</span>记一笔</div>
+        <div class="seg" id="mo-kind">
+          <button class="active" data-kind="out">支出</button>
+          <button data-kind="in">收入</button>
+        </div>
+        <div class="form-row" style="margin-bottom:10px">
+          <input type="number" class="form-input" id="mo-amount" placeholder="金额" inputmode="decimal" step="0.01">
+          <input type="date" class="form-input" id="mo-date">
+        </div>
+        <select class="form-select" id="mo-cat" style="margin-bottom:10px"></select>
+        <input type="text" class="form-input" id="mo-note" placeholder="备注（例如：周三家教 2 小时）" style="margin-bottom:12px">
+        <button class="btn-primary" id="mo-save">保存</button>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">📊</span>本月分类</div>
+        <div class="seg" id="mo-chart-kind" style="margin-bottom:14px">
+          <button class="active" data-k="out">支出构成</button>
+          <button data-k="in">收入构成</button>
+        </div>
+        <div id="mo-cats"></div>
+      </div>
+      <div class="sec-title"><span class="em">🧾</span>本月明细<span class="more" id="mo-count"></span></div>
+      <div id="mo-list"></div>
+    </section>
+
+    <!-- ========== 周周复盘 ========== -->
+    <section class="page" id="page-weekly">
+      <div class="page-hero">
+        <h3><span>🗓</span>周周复盘</h3>
+        <p>回头看看这一周，才知道走了多远</p>
+      </div>
+      <div class="week-nav">
+        <button id="wk-prev">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="wn-label" id="wk-label">--</span>
+        <button id="wk-next">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="stat-row" id="wk-stats"></div>
+      <div class="card">
+        <div class="review-block">
+          <label><span>🌟</span>这周做得好的</label>
+          <textarea class="form-textarea" data-wk="good" rows="3" placeholder="哪怕很小的事也算…"></textarea>
+        </div>
+        <div class="review-block">
+          <label><span>🌧</span>没做好 / 卡住的</label>
+          <textarea class="form-textarea" data-wk="bad" rows="3" placeholder="什么拖住了你…"></textarea>
+        </div>
+        <div class="review-block">
+          <label><span>💡</span>学到了什么</label>
+          <textarea class="form-textarea" data-wk="learn" rows="3" placeholder="一句话总结也可以…"></textarea>
+        </div>
+        <div class="review-block mb0">
+          <label><span>🎯</span>下周想做到</label>
+          <textarea class="form-textarea" data-wk="next" rows="3" placeholder="写 1-3 件就够了…"></textarea>
+        </div>
+      </div>
+      <p class="muted center">内容自动保存 ☁️</p>
+    </section>
+
+    <!-- ========== 添加页 ========== -->
+    <section class="page" id="page-add">
+      <div class="page-hero">
+        <h3><span>✨</span>快速添加</h3>
+        <p>想记什么就记什么</p>
+      </div>
+      <div class="home-grid" id="add-grid"></div>
+    </section>
+
+    <!-- ========== 设置 ========== -->
+    <section class="page" id="page-settings">
+      <div class="page-hero">
+        <h3><span>⚙️</span>设置</h3>
+        <p>数据都在你自己手机里</p>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">📦</span>数据管理</div>
+        <p class="muted" style="margin-bottom:12px">所有内容保存在本机浏览器。换手机前记得导出备份。</p>
+        <button class="btn-secondary" id="export-btn">导出备份</button>
+        <button class="btn-secondary" id="import-btn">导入备份</button>
+        <input type="file" id="import-file" accept=".json" hidden>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">📱</span>装到手机桌面</div>
+        <p class="muted">iPhone：Safari 打开 → 底部分享按钮 → 添加到主屏幕<br>安卓：浏览器菜单 → 添加到主屏幕</p>
+      </div>
+      <div class="card">
+        <div class="sec-title"><span class="em">⚠️</span>危险操作</div>
+        <button class="btn-danger" id="clear-btn">清空所有数据</button>
+      </div>
+    </section>
   </div>
 
-  <div class="toast" id="toast"></div>
-  <script src="js/app.js"></script>
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-nav="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg><span>首页</span>
+    </button>
+    <button class="nav-item" data-nav="focus">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/>
+      </svg><span>专注</span>
+    </button>
+    <button class="nav-item nav-add" data-nav="add">
+      <div class="add-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </div>
+    </button>
+    <button class="nav-item" data-nav="inspo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h6M10 22h4M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/>
+      </svg><span>灵感</span>
+    </button>
+    <button class="nav-item" data-nav="weekly">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg><span>复盘</span>
+    </button>
+  </nav>
+</div>
+
+<div class="reward-mask" id="reward-mask">
+  <div class="reward-box">
+    <span class="reward-icon" id="reward-icon">🎉</span>
+    <div class="reward-title" id="reward-title">你真棒！</div>
+    <div class="reward-sub" id="reward-sub"></div>
+    <div class="reward-stat" id="reward-stat"></div>
+    <button class="btn-primary" id="reward-close">收下这份夸奖</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
