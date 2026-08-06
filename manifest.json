@@ -4,8 +4,8 @@
   "start_url": "/yingying-workbench/",
   "scope": "/yingying-workbench/",
   "display": "standalone",
-  "background_color": "#f5f0eb",
-  "theme_color": "#f5f0eb",
+  "background_color": "#FBF8FE",
+  "theme_color": "#B99BD8",
   "orientation": "portrait",
   "icons": [
     {
