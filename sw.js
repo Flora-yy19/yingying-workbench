@@ -1,10 +1,8 @@
-const CACHE_NAME = 'yingying-workbench-v2';
+const CACHE_NAME = 'yingying-workbench-v3';
 const BASE = '/yingying-workbench';
 const ASSETS = [
   `${BASE}/`,
   `${BASE}/index.html`,
-  `${BASE}/css/styles.css`,
-  `${BASE}/js/app.js`,
   `${BASE}/manifest.json`,
   `${BASE}/icons/icon-192.png`,
   `${BASE}/icons/icon-512.png`
@@ -33,3 +31,4 @@ self.addEventListener('fetch', event => {
     )
   );
 });
+
