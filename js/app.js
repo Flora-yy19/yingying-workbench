@@ -1,743 +1,320 @@
-(() => {
-  'use strict';
+/* ==========================================================
+   影影的工作台 · 内容库
+   （选题 / 四级短句 / 单词 / 文学金句 / 表达话题）
+   ========================================================== */
+window.DATA = (function () {
 
-  // ===== 板块配置 =====
-  const PAGES = [
-    { id: 'home',     name: '影影的工作台', icon: '🏠',  type: 'home',     color: '#8b9d83', bg: '#edf1e9' },
-    { id: 'daily',    name: '每日计划',     icon: '☀️',  type: 'task',     color: '#8b9d83', bg: '#edf1e9' },
-    { id: 'topic',    name: '选题灵感',     icon: '🔥',  type: 'hub',      color: '#c7a99e', bg: '#f7f0ec' },
-    { id: 'inspo',    name: '灵感抓取',     icon: '✨',  type: 'inspo',    color: '#c4a8a2', bg: '#f5eeeb' },
-    { id: 'weekly',   name: '周周复盘',     icon: '📋',  type: 'weekly',   color: '#9aa7b0', bg: '#eef1f3' },
-    { id: 'english',  name: '英语学习',     icon: '🌿',  type: 'hub',      color: '#b0a4b6', bg: '#f0edf2' },
-    { id: 'edit',     name: '剪辑练习',     icon: '🎬',  type: 'hub',      color: '#c7a99e', bg: '#f7f0ec' },
-    { id: 'photo',    name: '修图练习',     icon: '🖼️', type: 'hub',      color: '#a3a88b', bg: '#eff1e8' },
-    { id: 'settings', name: '设置',         icon: '⚙️',  type: 'settings', color: '#9a9590', bg: '#f7f3ee' }
+  /* ---------- 小红书热门选题（大学生博主向） ---------- */
+  const TOPIC_XHS = [
+    { t: '大学生一周伙食费挑战', d: '记录一周三餐花了多少钱，配食堂窗口实拍。真实感强，评论区容易炸。', tags: ['省钱', '日常', '食堂'], heat: 98,
+      how: '开头直接抛数字「一周只花了 XX 元」，中间按天铺，结尾算总账 + 心得。' },
+    { t: '我的宿舍改造前后对比', d: '几十块钱把桌面/床帘/收纳改一遍，前后对比图冲击力强。', tags: ['宿舍', '改造', '好物'], heat: 95,
+      how: '首图必须放 before/after 拼图，正文写清每样东西多少钱、哪里买。' },
+    { t: '期末速通｜我是怎么两周捡回一学期的', d: '复习方法 + 时间表 + 真实成绩，期末季必爆。', tags: ['学习', '期末', '干货'], heat: 94,
+      how: '给出可复制的时间表，配笔记实拍，标题带具体天数。' },
+    { t: '一个人也能做的周末 city walk', d: '本地小众路线，地图 + 拍照点位 + 花费。', tags: ['旅行', '本地', '独处'], heat: 90,
+      how: '路线图做成一张图，每个点位配一张出片照，结尾写总花费。' },
+    { t: '大学生适合的兼职有哪些（真实踩坑）', d: '家教、探店、剪辑…讲清单价、耗时、坑在哪。', tags: ['兼职', '副业', '避雷'], heat: 92,
+      how: '用表格式排版，一项一项对比时薪和门槛，真实感最重要。' },
+    { t: '我的每日 plan 是怎么写的', d: '手帐 / 电子清单实拍，附模板。', tags: ['自律', '效率', '模板'], heat: 88,
+      how: '结尾放可下载模板，能大量涨收藏。' },
+    { t: '开学季｜这些东西真的别买', d: '反向种草，避雷向内容比推荐更容易火。', tags: ['开学', '避雷', '清单'], heat: 89,
+      how: '每样东西写清「为什么不推荐」，语气可以毒舌一点。' },
+    { t: '普通女生变好看的 10 个小习惯', d: '低成本变美，不涉及整容和贵妇产品。', tags: ['变美', '习惯', '自律'], heat: 93,
+      how: '每条一句话讲完，配九宫格，别写成长篇。' },
+    { t: '英语四级 425 → 550 我做对了什么', d: '备考路径 + 资料 + 时间投入。', tags: ['四级', '英语', '备考'], heat: 91,
+      how: '前后分数截图是可信度关键，资料整理成清单。' },
+    { t: '我的手机里那些相见恨晚的 App', d: '效率、学习、修图类 App 合集。', tags: ['App', '效率', '工具'], heat: 86,
+      how: '一张图放全部图标，正文分类讲，收藏率极高。' },
+    { t: '在图书馆待一整天是什么体验', d: 'vlog 式图文，从早到晚的时间线。', tags: ['学习', 'vlog', '日常'], heat: 84,
+      how: '用时间点做小标题，中间穿插吃了什么、状态怎么样。' },
+    { t: '给学妹的大一避坑指南', d: '选课、社团、人际、消费四个方面。', tags: ['大一', '经验', '干货'], heat: 87,
+      how: '分点写，每点给一句「过来人结论」。' }
   ];
 
-  const HUB_PAGES = ['topic', 'english', 'edit', 'photo'];
-  const TASK_PAGES = ['daily', 'topic', 'english', 'edit', 'photo'];
-  const BOTTOM_NAV = ['home', 'topic', 'add', 'inspo', 'weekly'];
-
-  const INSPO_TYPES = [
-    { id: 'quote',   name: '语录金句', icon: '💬', color: '#c4a8a2' },
-    { id: 'copy',    name: '文案灵感', icon: '✍️', color: '#9aa7b0' },
-    { id: 'visual',  name: '视觉参考', icon: '👁️', color: '#c4b8a8' },
-    { id: 'music',   name: '音乐/BGM', icon: '🎵', color: '#a3a88b' },
-    { id: 'topic',   name: '爆款选题', icon: '🔥', color: '#c7a99e' },
-    { id: 'comment', name: '评论素材', icon: '💭', color: '#b0a4b6' }
+  /* ---------- 抖音热门选题 ---------- */
+  const TOPIC_DY = [
+    { t: '「大学生的一天」快剪 vlog', d: '早八到熄灯，卡点快剪 30-45 秒，节奏是关键。', tags: ['vlog', '快剪', '日常'], heat: 97,
+      how: '前 3 秒必须放最出片的一个画面，全程卡鼓点，字幕要大。' },
+    { t: '宿舍好物一镜到底', d: '手机一镜扫过桌面，边走边介绍。', tags: ['好物', '宿舍', '一镜到底'], heat: 93,
+      how: '不要停顿，语速快，最后一句留钩子「还有一个我藏起来了」。' },
+    { t: '我妈打电话问我在干嘛系列', d: '情景反差剧，学生党共鸣极强。', tags: ['剧情', '搞笑', '共鸣'], heat: 95,
+      how: '反差要够大，时长控制在 20 秒内。' },
+    { t: '花 XX 元在学校门口吃到饱', d: '探店挑战，价格越低越有看点。', tags: ['探店', '美食', '挑战'], heat: 96,
+      how: '标题带具体数字，中途实时报剩余金额。' },
+    { t: '自习室 4 小时 timelapse', d: '延时摄影 + 学习白噪音，治愈系。', tags: ['学习', '延时', '治愈'], heat: 88,
+      how: '固定机位，加进度条字幕，配轻音乐。' },
+    { t: '突然被点名回答问题的 100 种反应', d: '夸张表演类，模板化容易复制。', tags: ['搞笑', '表演', '校园'], heat: 90,
+      how: '每种反应 2 秒，快切，结尾放最离谱的。' },
+    { t: '我的四级备考桌面', d: '空镜 + 手写 + 翻书声，ASMR 感。', tags: ['学习', 'ASMR', '四级'], heat: 85,
+      how: '收音要干净，画面构图整洁，不用出镜。' },
+    { t: '穷学生版「精致生活」', d: '低成本复刻网红生活方式，反差幽默。', tags: ['反差', '搞笑', '省钱'], heat: 92,
+      how: '左右分屏对比「网红版 vs 我的版」。' },
+    { t: '大学四年我踩过的坑', d: '口播类，一条一句，语速快。', tags: ['口播', '经验', '干货'], heat: 89,
+      how: '正对镜头，背景干净，每句话配一行大字幕。' },
+    { t: '收到成绩那一刻的表情管理', d: '强情绪画面，完播率高。', tags: ['情绪', '搞笑', '考试'], heat: 91,
+      how: '前面铺垫紧张感，最后一秒反转。' },
+    { t: '一个人吃饭的第 N 天', d: '慢节奏治愈向，配文案字幕。', tags: ['治愈', '独处', '美食'], heat: 83,
+      how: '画面稳、色调统一，文案要戳心。' },
+    { t: '学生党化妆前后（不磨皮）', d: '真实向变美内容，信任度高。', tags: ['变美', '化妆', '真实'], heat: 87,
+      how: '强调不开美颜，前后同机位同光线。' }
   ];
 
-  const PLATFORMS = {
-    douyin: { name: '抖音', cls: 'platform-douyin' },
-    xiaohongshu: { name: '小红书', cls: 'platform-xiaohongshu' },
-    bilibili: { name: 'B站', cls: 'platform-bilibili' },
-    other: { name: '其他', cls: 'platform-other' }
-  };
+  /* ---------- 四级每日短句 ---------- */
+  const SENTENCES = [
+    { en: 'Every accomplishment starts with the decision to try.', cn: '每一项成就都始于决定尝试的那一刻。', note: 'accomplishment n. 成就；start with 以…开始。四级写作万能开头句。' },
+    { en: 'The best preparation for tomorrow is doing your best today.', cn: '为明天做的最好准备，就是今天全力以赴。', note: 'preparation for 对…的准备；do one\'s best 尽全力。' },
+    { en: 'Success is the sum of small efforts repeated day in and day out.', cn: '成功是日复一日小努力的总和。', note: 'the sum of …的总和；day in and day out 日复一日（高频短语）。' },
+    { en: 'It is not enough to be busy; the question is what we are busy about.', cn: '光是忙碌还不够，问题在于我们在忙什么。', note: 'It is not enough to do sth. 做某事还不够，四级作文常用句型。' },
+    { en: 'What we learn with pleasure we never forget.', cn: '带着愉悦学到的东西，永远不会忘记。', note: 'what 引导主语从句，写作提分句型。' },
+    { en: 'Difficulties strengthen the mind, as labor does the body.', cn: '困难磨炼心智，正如劳动锻炼身体。', note: 'as 引导比较状语从句，注意省略结构。' },
+    { en: 'The future depends on what you do today.', cn: '未来取决于你今天做了什么。', note: 'depend on 取决于（四级高频动词短语）。' },
+    { en: 'Nothing is impossible to a willing heart.', cn: '心之所愿，无所不成。', note: 'be impossible to sb. 对某人来说不可能；willing adj. 愿意的。' },
+    { en: 'Learning is a treasure that will follow its owner everywhere.', cn: '学识是能伴随主人四处而行的珍宝。', note: 'treasure n. 珍宝；that 引导定语从句。' },
+    { en: 'You miss 100% of the shots you don\'t take.', cn: '你不出手，就会错失全部机会。', note: 'miss v. 错过；take a shot 尝试一次。' },
+    { en: 'Time you enjoy wasting is not wasted time.', cn: '你享受浪费的时间，就不算浪费。', note: '定语从句省略 that；waste 的动名词用法。' },
+    { en: 'Small steps every day add up to big results.', cn: '每天一小步，累积成大成果。', note: 'add up to 加起来等于/累积成（四级高频短语动词）。' },
+    { en: 'A comfort zone is a beautiful place, but nothing ever grows there.', cn: '舒适区很美好，但那里长不出任何东西。', note: 'comfort zone 舒适区，写作素材词。' },
+    { en: 'Believe you can and you are halfway there.', cn: '相信自己能做到，你就已经成功了一半。', note: 'halfway adv. 到一半；祈使句 + and + 陈述句结构。' },
+    { en: 'The only way to do great work is to love what you do.', cn: '做出伟大成就的唯一方法，就是热爱你所做的事。', note: 'The only way to do sth. is to… 四级作文经典句型。' },
+    { en: 'Knowledge makes humble; ignorance makes proud.', cn: '知识令人谦逊，无知使人骄傲。', note: 'humble adj. 谦逊的；ignorance n. 无知。对比结构。' },
+    { en: 'Do not wait for opportunity; create it.', cn: '不要等待机会，要创造机会。', note: 'wait for 等待；祈使句否定形式。' },
+    { en: 'Persistence guarantees that results are inevitable.', cn: '坚持能保证结果必然到来。', note: 'persistence n. 坚持；inevitable adj. 不可避免的（四级词汇）。' },
+    { en: 'The expert in anything was once a beginner.', cn: '任何领域的专家都曾是初学者。', note: 'expert in 在…方面的专家；once adv. 曾经。' },
+    { en: 'Focus on being productive instead of busy.', cn: '专注于高效，而不是忙碌。', note: 'focus on 专注于；instead of 而不是。' }
+  ];
 
-  const DOUYIN_KEYWORDS = {
-    quote: ['金句', '语录', '名言', '说', '告诉你', '感悟', '道理', '人生', '心态', '格局', '认知', '思维'],
-    copy: ['文案', '标题', '脚本', '怎么写', '选题', '爆款', '流量', '涨粉', '运营', '自媒体'],
-    visual: ['拍摄', '构图', '画面', '色调', '滤镜', '角度', '镜头', '运镜', '封面', '打光', '布景'],
-    music: ['BGM', '背景音乐', '配乐', '音效', '节奏', '卡点', '音乐', '歌曲', '旋律'],
-    topic: ['挑战', '趋势', '热门', '跟拍', '二创', '模仿', '新玩法', '教程', '干货'],
-    comment: ['评论', '神评', '高赞', '评论区', '网友说', '热评']
-  };
+  /* ---------- 四级核心词 ---------- */
+  const WORDS = [
+    { w: 'abandon', p: '/əˈbændən/', m: 'v. 放弃；抛弃' },
+    { w: 'absorb', p: '/əbˈsɔːrb/', m: 'v. 吸收；理解' },
+    { w: 'academic', p: '/ˌækəˈdemɪk/', m: 'adj. 学术的' },
+    { w: 'accompany', p: '/əˈkʌmpəni/', m: 'v. 陪伴；伴随' },
+    { w: 'accurate', p: '/ˈækjərət/', m: 'adj. 精确的' },
+    { w: 'achieve', p: '/əˈtʃiːv/', m: 'v. 实现；达到' },
+    { w: 'acquire', p: '/əˈkwaɪər/', m: 'v. 获得；习得' },
+    { w: 'adapt', p: '/əˈdæpt/', m: 'v. 适应；改编' },
+    { w: 'adequate', p: '/ˈædɪkwət/', m: 'adj. 足够的' },
+    { w: 'adjust', p: '/əˈdʒʌst/', m: 'v. 调整；适应' },
+    { w: 'advantage', p: '/ədˈvæntɪdʒ/', m: 'n. 优势；好处' },
+    { w: 'affect', p: '/əˈfekt/', m: 'v. 影响' },
+    { w: 'ambitious', p: '/æmˈbɪʃəs/', m: 'adj. 有雄心的' },
+    { w: 'analyze', p: '/ˈænəlaɪz/', m: 'v. 分析' },
+    { w: 'anxiety', p: '/æŋˈzaɪəti/', m: 'n. 焦虑' },
+    { w: 'appreciate', p: '/əˈpriːʃieɪt/', m: 'v. 欣赏；感激' },
+    { w: 'approach', p: '/əˈproʊtʃ/', m: 'n. 方法 v. 接近' },
+    { w: 'appropriate', p: '/əˈproʊpriət/', m: 'adj. 恰当的' },
+    { w: 'assume', p: '/əˈsuːm/', m: 'v. 假定；承担' },
+    { w: 'attitude', p: '/ˈætɪtuːd/', m: 'n. 态度' },
+    { w: 'available', p: '/əˈveɪləbl/', m: 'adj. 可获得的' },
+    { w: 'benefit', p: '/ˈbenɪfɪt/', m: 'n./v. 益处；受益' },
+    { w: 'capacity', p: '/kəˈpæsəti/', m: 'n. 容量；能力' },
+    { w: 'challenge', p: '/ˈtʃælɪndʒ/', m: 'n./v. 挑战' },
+    { w: 'circumstance', p: '/ˈsɜːrkəmstæns/', m: 'n. 情况；环境' },
+    { w: 'commit', p: '/kəˈmɪt/', m: 'v. 承诺；犯（错）' },
+    { w: 'compete', p: '/kəmˈpiːt/', m: 'v. 竞争' },
+    { w: 'complex', p: '/kəmˈpleks/', m: 'adj. 复杂的' },
+    { w: 'concentrate', p: '/ˈkɑːnsntreɪt/', m: 'v. 集中；专心' },
+    { w: 'confidence', p: '/ˈkɑːnfɪdəns/', m: 'n. 信心' },
+    { w: 'consequence', p: '/ˈkɑːnsɪkwens/', m: 'n. 后果' },
+    { w: 'considerable', p: '/kənˈsɪdərəbl/', m: 'adj. 相当大的' },
+    { w: 'contribute', p: '/kənˈtrɪbjuːt/', m: 'v. 贡献；促成' },
+    { w: 'convince', p: '/kənˈvɪns/', m: 'v. 说服；使信服' },
+    { w: 'crucial', p: '/ˈkruːʃl/', m: 'adj. 至关重要的' },
+    { w: 'decline', p: '/dɪˈklaɪn/', m: 'v./n. 下降；婉拒' },
+    { w: 'dedicate', p: '/ˈdedɪkeɪt/', m: 'v. 致力于；奉献' },
+    { w: 'demonstrate', p: '/ˈdemənstreɪt/', m: 'v. 证明；演示' },
+    { w: 'distinguish', p: '/dɪˈstɪŋɡwɪʃ/', m: 'v. 区分' },
+    { w: 'efficient', p: '/ɪˈfɪʃnt/', m: 'adj. 高效的' },
+    { w: 'eliminate', p: '/ɪˈlɪmɪneɪt/', m: 'v. 消除；淘汰' },
+    { w: 'emphasize', p: '/ˈemfəsaɪz/', m: 'v. 强调' },
+    { w: 'encounter', p: '/ɪnˈkaʊntər/', m: 'v./n. 遭遇' },
+    { w: 'essential', p: '/ɪˈsenʃl/', m: 'adj. 必要的' },
+    { w: 'establish', p: '/ɪˈstæblɪʃ/', m: 'v. 建立' },
+    { w: 'evaluate', p: '/ɪˈvæljueɪt/', m: 'v. 评估' },
+    { w: 'evidence', p: '/ˈevɪdəns/', m: 'n. 证据' },
+    { w: 'expose', p: '/ɪkˈspoʊz/', m: 'v. 暴露；使接触' },
+    { w: 'flexible', p: '/ˈfleksəbl/', m: 'adj. 灵活的' },
+    { w: 'fundamental', p: '/ˌfʌndəˈmentl/', m: 'adj. 基本的' },
+    { w: 'generate', p: '/ˈdʒenəreɪt/', m: 'v. 产生' },
+    { w: 'guarantee', p: '/ˌɡærənˈtiː/', m: 'v./n. 保证' },
+    { w: 'identify', p: '/aɪˈdentɪfaɪ/', m: 'v. 识别；确认' },
+    { w: 'impact', p: '/ˈɪmpækt/', m: 'n. 影响；冲击' },
+    { w: 'implement', p: '/ˈɪmplɪment/', m: 'v. 实施' },
+    { w: 'indicate', p: '/ˈɪndɪkeɪt/', m: 'v. 表明' },
+    { w: 'inevitable', p: '/ɪnˈevɪtəbl/', m: 'adj. 不可避免的' },
+    { w: 'initiative', p: '/ɪˈnɪʃətɪv/', m: 'n. 主动性；倡议' },
+    { w: 'maintain', p: '/meɪnˈteɪn/', m: 'v. 维持；主张' },
+    { w: 'motivate', p: '/ˈmoʊtɪveɪt/', m: 'v. 激励' },
+    { w: 'obtain', p: '/əbˈteɪn/', m: 'v. 获得' },
+    { w: 'obvious', p: '/ˈɑːbviəs/', m: 'adj. 明显的' },
+    { w: 'participate', p: '/pɑːrˈtɪsɪpeɪt/', m: 'v. 参与' },
+    { w: 'perspective', p: '/pərˈspektɪv/', m: 'n. 视角；观点' },
+    { w: 'potential', p: '/pəˈtenʃl/', m: 'n./adj. 潜力；潜在的' },
+    { w: 'previous', p: '/ˈpriːviəs/', m: 'adj. 先前的' },
+    { w: 'priority', p: '/praɪˈɔːrəti/', m: 'n. 优先事项' },
+    { w: 'reluctant', p: '/rɪˈlʌktənt/', m: 'adj. 不情愿的' },
+    { w: 'reveal', p: '/rɪˈviːl/', m: 'v. 揭示' },
+    { w: 'significant', p: '/sɪɡˈnɪfɪkənt/', m: 'adj. 显著的' },
+    { w: 'strategy', p: '/ˈstrætədʒi/', m: 'n. 策略' },
+    { w: 'sufficient', p: '/səˈfɪʃnt/', m: 'adj. 充足的' },
+    { w: 'tendency', p: '/ˈtendənsi/', m: 'n. 趋势；倾向' },
+    { w: 'transform', p: '/trænsˈfɔːrm/', m: 'v. 转变' },
+    { w: 'urgent', p: '/ˈɜːrdʒənt/', m: 'adj. 紧急的' },
+    { w: 'virtual', p: '/ˈvɜːrtʃuəl/', m: 'adj. 虚拟的' },
+    { w: 'vital', p: '/ˈvaɪtl/', m: 'adj. 至关重要的' }
+  ];
 
-  // ===== 推荐视频数据 =====
-  const RECOMMENDATIONS = {
-    topic: [
-      { id: 'rt1', title: '如何用ChatGPT批量生成爆款选题', url: 'https://www.bilibili.com/video/BV1xx411c7uX', platform: 'bilibili', desc: 'AI辅助选题，效率翻10倍', type: 'video' },
-      { id: 'rt2', title: '拆解一条500万播放的抖音视频', url: 'https://www.douyin.com', platform: 'douyin', desc: '从选题到剪辑全流程拆解', type: 'video' },
-      { id: 'rt3', title: '小红书爆款笔记的7个公式', url: 'https://www.xiaohongshu.com', platform: 'xiaohongshu', desc: '标题+封面+内容结构', type: 'article' }
+  /* ---------- 文学金句 ---------- */
+  const LIT = [
+    { q: '愿你在被打击时，记起你的珍贵，抵抗恶意；愿你在迷茫时，坚信你的珍贵，爱你所爱，行你所行，听从你心，无问西东。', b: '无问西东', a: '李芳芳', c: 'other' },
+    { q: '你要做一个不动声色的大人了。不准情绪化，不准偷偷想念，不准回头看。去过自己另外的生活。', b: '玛格丽特小镇', a: '加布瑞埃拉·泽文', c: 'novel' },
+    { q: '生活明朗，万物可爱，人间值得，未来可期。', b: '人间值得', a: '中村恒子', c: 'prose' },
+    { q: '每个人都是一个月亮，总有一个阴暗面从来不让人看见。', b: '赤道航行记', a: '马克·吐温', c: 'novel' },
+    { q: '我们都是虫，但我确实觉得，我是一只萤火虫。', b: '丘吉尔演讲集', a: '丘吉尔', c: 'prose' },
+    { q: '人的一生可能燃烧也可能腐朽，我不能腐朽，我愿意燃烧起来！', b: '钢铁是怎样炼成的', a: '奥斯特洛夫斯基', c: 'novel' },
+    { q: '面包会有的，牛奶也会有的，一切都会有的。', b: '列宁在1918', a: '苏联电影台词', c: 'other' },
+    { q: '希望是本无所谓有，无所谓无的。这正如地上的路；其实地上本没有路，走的人多了，也便成了路。', b: '故乡', a: '鲁迅', c: 'prose' },
+    { q: '愿中国青年都摆脱冷气，只是向上走，不必听自暴自弃者流的话。', b: '热风', a: '鲁迅', c: 'prose' },
+    { q: '我们一生的种种努力，无非是为了周遭的人对我们满意。', b: '沉思录', a: '马可·奥勒留', c: 'prose' },
+    { q: '你若要喜爱你自己的价值，你就得给世界创造价值。', b: '歌德谈话录', a: '歌德', c: 'prose' },
+    { q: '生如夏花之绚烂，死如秋叶之静美。', b: '飞鸟集', a: '泰戈尔', c: 'poem' },
+    { q: '世界以痛吻我，要我报之以歌。', b: '飞鸟集', a: '泰戈尔', c: 'poem' },
+    { q: '黑夜给了我黑色的眼睛，我却用它寻找光明。', b: '一代人', a: '顾城', c: 'poem' },
+    { q: '从明天起，做一个幸福的人，喂马、劈柴，周游世界。', b: '面朝大海，春暖花开', a: '海子', c: 'poem' },
+    { q: '我如果爱你，绝不像攀援的凌霄花，借你的高枝炫耀自己。', b: '致橡树', a: '舒婷', c: 'poem' },
+    { q: '轻轻的我走了，正如我轻轻的来；我挥一挥衣袖，不带走一片云彩。', b: '再别康桥', a: '徐志摩', c: 'poem' },
+    { q: '你站在桥上看风景，看风景的人在楼上看你。', b: '断章', a: '卞之琳', c: 'poem' },
+    { q: '所有的日子，所有的日子都来吧，让我编织你们，用青春的金线，和幸福的璎珞。', b: '生活是多么广阔', a: '何其芳', c: 'poem' },
+    { q: '大地上的事情，是永远也说不完的。', b: '大地上的事情', a: '苇岸', c: 'prose' },
+    { q: '一个人只要不再想要，就什么都可以放下。', b: '半生缘', a: '张爱玲', c: 'novel' },
+    { q: '于千万人之中遇见你所要遇见的人，于千万年之中，时间的无涯的荒野里，没有早一步，也没有晚一步。', b: '爱', a: '张爱玲', c: 'prose' },
+    { q: '人是为了活着本身而活着，而不是为了活着之外的任何事物而活着。', b: '活着', a: '余华', c: 'novel' },
+    { q: '没有一个冬天不可逾越，没有一个春天不会来临。', b: '西西弗神话', a: '加缪', c: 'prose' },
+    { q: '在隆冬，我终于知道，我身上有一个不可战胜的夏天。', b: '夏天集', a: '加缪', c: 'prose' },
+    { q: '所有伟大的行动和思想，都有一个微不足道的开始。', b: '西西弗神话', a: '加缪', c: 'prose' },
+    { q: '生命中曾经有过的所有灿烂，终究都需要用寂寞来偿还。', b: '百年孤独', a: '加西亚·马尔克斯', c: 'novel' },
+    { q: '过去都是假的，回忆是一条没有归途的路。', b: '百年孤独', a: '加西亚·马尔克斯', c: 'novel' },
+    { q: '你什么时候放下，什么时候就没有烦恼。', b: '瓦尔登湖', a: '梭罗', c: 'prose' },
+    { q: '我步入丛林，因为我希望生活得有意义，我希望活得深刻，吸取生命中所有的精华。', b: '瓦尔登湖', a: '梭罗', c: 'prose' },
+    { q: '如果你想造一艘船，先不要雇人去收集木头，而是要激起他们对大海的向往。', b: '小王子', a: '圣埃克苏佩里', c: 'novel' },
+    { q: '你在你的玫瑰花身上耗费的时间，使得你的玫瑰花变得如此重要。', b: '小王子', a: '圣埃克苏佩里', c: 'novel' },
+    { q: '每个人都是一座孤岛，但每座孤岛下面，都连着同一片海底。', b: '岛上书店', a: '加布瑞埃拉·泽文', c: 'novel' },
+    { q: '当你真心渴望某样东西时，整个宇宙都会联合起来帮助你完成。', b: '牧羊少年奇幻之旅', a: '保罗·柯艾略', c: 'novel' },
+    { q: '一个人的命运，当然要靠自我奋斗，但是也要考虑到历史的进程。', b: '回忆录', a: '－', c: 'other' },
+    { q: '我们最容易忽略的，往往是我们已经拥有的。', b: '追风筝的人', a: '卡勒德·胡赛尼', c: 'novel' },
+    { q: '为你，千千万万遍。', b: '追风筝的人', a: '卡勒德·胡赛尼', c: 'novel' },
+    { q: '人生如逆旅，我亦是行人。', b: '临江仙', a: '苏轼', c: 'poem' },
+    { q: '莫听穿林打叶声，何妨吟啸且徐行。', b: '定风波', a: '苏轼', c: 'poem' },
+    { q: '路漫漫其修远兮，吾将上下而求索。', b: '离骚', a: '屈原', c: 'poem' }
+  ];
+
+  /* ---------- 表达力话题 ---------- */
+  const EX_TOPICS = [
+    { q: '如果要用三个词形容现在的自己，你会选哪三个？为什么？', h: '先给结论（三个词），再各配一件具体的事。' },
+    { q: '最近让你觉得「值得」的一笔花销是什么？', h: '讲清花了多少、买了什么、为什么值得，最后给一个判断标准。' },
+    { q: '你怎么看「大学生要不要做兼职」这件事？', h: '先亮观点，再给两个理由 + 一个反方情况，最后收结论。' },
+    { q: '向没来过你学校的人介绍你的学校，你会怎么说？', h: '用一个比喻开场，选三个最有代表性的点，别面面俱到。' },
+    { q: '描述一个让你印象最深的陌生人。', h: '写外貌不如写细节动作，结尾点出这件事对你的影响。' },
+    { q: '你觉得「自律」到底是什么？', h: '先反驳一个常见误解，再给出你的定义，配自己的例子。' },
+    { q: '如果给一年前的自己发一条消息，你会说什么？', h: '控制在三句话内，第一句要有冲击力。' },
+    { q: '推荐一部你会二刷的作品，说服别人去看。', h: '不要剧透，讲它让你产生的感受，给一个具体的画面。' },
+    { q: '你怎么处理「和朋友观点不合」的情况？', h: '给方法而不是给态度，最好能举一个真实回合。' },
+    { q: '最近一次「坚持下来」的经历是什么？', h: '交代难点在哪、什么时候最想放弃、靠什么撑过来。' },
+    { q: '你觉得什么样的生活算「过得不错」？', h: '避免空话，用三个可观察的标准来定义。' },
+    { q: '如果让你做一期视频给同龄人打气，你的开场白是什么？', h: '开场白要短、要具体、要能引起对号入座。' },
+    { q: '讲讲一件你「后来才明白」的事。', h: '按当时怎么想 → 发生了什么 → 现在怎么想来铺。' },
+    { q: '你最想改掉自己的哪个习惯？打算怎么改？', h: '说清触发场景，给一个可执行的替代动作。' },
+    { q: '如果只能带三样东西去一个陌生城市生活一个月，你带什么？', h: '每样东西给一个非功能性的理由，会更有意思。' }
+  ];
+
+  /* ---------- 情绪选项 ---------- */
+  const MOODS = [
+    { k: 'great', e: '🥰', l: '超开心', v: 5 },
+    { k: 'good',  e: '😊', l: '还不错', v: 4 },
+    { k: 'flat',  e: '😐', l: '平平的', v: 3 },
+    { k: 'tired', e: '🥱', l: '好累呀', v: 2.5 },
+    { k: 'sad',   e: '🥺', l: '很难过', v: 1.5 },
+    { k: 'anx',   e: '😰', l: '好焦虑', v: 1.5 },
+    { k: 'angry', e: '😤', l: '有点气', v: 2 },
+    { k: 'calm',  e: '🍃', l: '很平静', v: 4 },
+    { k: 'proud', e: '✨', l: '有成就', v: 5 },
+    { k: 'lost',  e: '🌫', l: '有点迷', v: 2 }
+  ];
+
+  const REASONS_GOOD = ['被夸了', '任务完成', '吃到好吃的', '睡饱了', '和朋友玩', '天气很好', '看了好剧', '收到钱了', '运动了', '进步了'];
+  const REASONS_BAD  = ['没睡好', '作业太多', '考试压力', '和人闹别扭', '拖延了', '身体不舒服', '花超了', '被否定', '太孤单', '计划泡汤'];
+
+  /* ---------- 记账分类 ---------- */
+  const MONEY_CATS = {
+    out: [
+      { k: 'food',  e: '🍜', l: '吃饭',   c: '#E9B7C4' },
+      { k: 'drink', e: '🧋', l: '奶茶咖啡', c: '#D9BCA8' },
+      { k: 'study', e: '📚', l: '学习',   c: '#B4C9E8' },
+      { k: 'daily', e: '🧴', l: '日用',   c: '#C7DCC9' },
+      { k: 'cloth', e: '👗', l: '穿搭',   c: '#D8C0E4' },
+      { k: 'trip',  e: '🚇', l: '交通',   c: '#A9C8D8' },
+      { k: 'fun',   e: '🎡', l: '娱乐',   c: '#F0CFA0' },
+      { k: 'beauty',e: '💄', l: '美妆',   c: '#EFB8C0' },
+      { k: 'health',e: '💊', l: '医疗',   c: '#B8D8C8' },
+      { k: 'other_o',e: '📦', l: '其他',  c: '#CFC6DA' }
     ],
-    english: [
-      { id: 're1', title: '影子跟读法：30天口语蜕变', url: 'https://www.bilibili.com/video/BV1GJ411x7M5', platform: 'bilibili', desc: '每天10分钟跟读练习', type: 'video' },
-      { id: 're2', title: 'VOA慢速英语精听训练', url: 'https://www.bilibili.com/video/BV1vJ411x7M6', platform: 'bilibili', desc: '逐句听写，提升听力', type: 'video' },
-      { id: 're3', title: '英语vlog博主推荐：轻松学口语', url: 'https://www.xiaohongshu.com', platform: 'xiaohongshu', desc: '日常生活英语，接地气', type: 'article' }
-    ],
-    edit: [
-      { id: 'rd1', title: '剪映专业版0基础到精通', url: 'https://www.bilibili.com/video/BV1GZ4y1H7Ep', platform: 'bilibili', desc: '保姆级教程，从入门到接单', type: 'video' },
-      { id: 'rd2', title: '5种高级转场技巧详解', url: 'https://www.bilibili.com/video/BV1a44y1G7dY', platform: 'bilibili', desc: '叠化/缩放/旋转/遮罩/匹配剪辑', type: 'video' },
-      { id: 'rd3', title: '爆款短视频节奏分析', url: 'https://www.douyin.com', platform: 'douyin', desc: '前3秒抓人，黄金5秒法则', type: 'video' }
-    ],
-    photo: [
-      { id: 'rp1', title: '莫兰迪色调色全攻略', url: 'https://www.bilibili.com/video/BV1W54y1L7Yy', platform: 'bilibili', desc: '低饱和高级感调色参数', type: 'video' },
-      { id: 'rp2', title: '手机修图App推荐+实操', url: 'https://www.xiaohongshu.com', platform: 'xiaohongshu', desc: '醒图/美图秀秀/VSCO对比', type: 'video' },
-      { id: 'rp3', title: '构图法则：9种万能构图', url: 'https://www.douyin.com', platform: 'douyin', desc: '三分法/引导线/框架/对称...', type: 'video' }
+    in: [
+      { k: 'tutor', e: '🧑‍🏫', l: '家教', c: '#A8CFC0' },
+      { k: 'part',  e: '💼', l: '兼职',   c: '#B5CBE6' },
+      { k: 'living',e: '🏠', l: '生活费', c: '#E0C9A8' },
+      { k: 'scholar',e: '🏆', l: '奖学金', c: '#F0D69B' },
+      { k: 'gift',  e: '🎁', l: '红包',   c: '#EFB9C3' },
+      { k: 'sell',  e: '🛍', l: '闲置',   c: '#C3C9E8' },
+      { k: 'other_i',e: '✨', l: '其他',  c: '#CFC6DA' }
     ]
   };
 
-  // ===== 工具 =====
-  function todayStr() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }
-
-  function weekStr(date) {
-    const d = new Date(date);
-    const day = d.getDay() || 7;
-    const monday = new Date(d);
-    monday.setDate(d.getDate() - day + 1);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    const fmt = x => `${x.getMonth() + 1}/${x.getDate()}`;
-    return `${fmt(monday)} - ${fmt(sunday)}`;
-  }
-
-  function generateId() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // ===== 状态 =====
-  let state = loadState();
-  let currentPage = 'home';
-  let currentInspoFilter = 'all';
-  let weeklyWeek = weekStr(new Date());
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem('yingying-workbench');
-      if (raw) {
-        const s = JSON.parse(raw);
-        if (!s.resources) s.resources = [];
-        if (!s.weeklies) s.weeklies = {};
-        return s;
-      }
-    } catch (e) {}
-    return defaultState();
-  }
-
-  function defaultState() {
-    return {
-      tasks: [
-        { id: 't1', boardId: 'daily', title: '整理今日待办事项', date: todayStr(), done: false, desc: '', createdAt: Date.now() - 5000 },
-        { id: 't2', boardId: 'daily', title: '刷抖音收集灵感 20 分钟', date: todayStr(), done: false, desc: '记录金句、好文案、视觉参考', createdAt: Date.now() - 4000 },
-        { id: 't3', boardId: 'english', title: '跟读练习 10 分钟', date: todayStr(), done: false, desc: '影子跟读法', createdAt: Date.now() - 3000 },
-        { id: 't4', boardId: 'english', title: '精听 VOA 一篇', date: todayStr(), done: false, desc: '做听写练习', createdAt: Date.now() - 2000 },
-        { id: 't5', boardId: 'edit', title: '练习转场：叠化 + 缩放', date: todayStr(), done: false, desc: '参考教程第 3 章', createdAt: Date.now() - 1000 },
-        { id: 't6', boardId: 'photo', title: '调色练习：莫兰迪风格 3 张', date: todayStr(), done: false, desc: '低饱和 + 暖调', createdAt: Date.now() }
-      ],
-      inspirations: [
-        { id: 'i1', title: '普通人逆袭最好的方式：把一件事重复做一万遍。', type: 'quote', desc: '自律/成长类账号适用', source: '抖音', sourceUrl: '', createdAt: Date.now() },
-        { id: 'i2', title: '只会空想，但行动力为 0？恭喜你，你的时代来了！', type: 'copy', desc: '反焦虑/行动力选题', source: '抖音', sourceUrl: '', createdAt: Date.now() - 10000 },
-        { id: 'i3', title: '俯拍 45° + 自然光 + 绿植前景', type: 'visual', desc: '适合 vlog 封面', source: '抖音', sourceUrl: '', createdAt: Date.now() - 20000 }
-      ],
-      resources: [],
-      weeklies: {}
-    };
-  }
-
-  function saveState() {
-    try { localStorage.setItem('yingying-workbench', JSON.stringify(state)); }
-    catch (e) {}
-  }
-
-  // ===== 侧边栏 =====
-  function initSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    const menuBtn = document.getElementById('menu-btn');
-
-    menuBtn.addEventListener('click', () => {
-      sidebar.classList.add('open'); overlay.classList.add('open');
-    });
-    overlay.addEventListener('click', () => {
-      sidebar.classList.remove('open'); overlay.classList.remove('open');
-    });
-
-    const nav = document.getElementById('sidebar-nav');
-    PAGES.filter(p => p.id !== 'settings').forEach(page => {
-      const btn = document.createElement('button');
-      btn.className = `sidebar-item`;
-      btn.dataset.page = page.id;
-      btn.innerHTML = `<span class="sidebar-icon">${page.icon}</span><span class="sidebar-label">${page.name}</span>`;
-      btn.addEventListener('click', () => {
-        navigateTo(page.id);
-        sidebar.classList.remove('open'); overlay.classList.remove('open');
-      });
-      nav.appendChild(btn);
-    });
-
-    document.querySelectorAll('.sidebar-footer .sidebar-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        navigateTo(btn.dataset.page);
-        sidebar.classList.remove('open'); overlay.classList.remove('open');
-      });
-    });
-  }
-
-  function updateSidebarActive() {
-    document.querySelectorAll('.sidebar-item').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.page === currentPage);
-    });
-  }
-
-  // ===== 导航 =====
-  function navigateTo(pageId) {
-    currentPage = pageId;
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById(`page-${pageId}`);
-    if (target) target.classList.add('active');
-
-    const page = PAGES.find(p => p.id === pageId);
-    document.getElementById('topbar-title').textContent = page ? page.name : '影影的工作台';
-
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navTarget = pageId === 'add' ? 'add' : (BOTTOM_NAV.includes(pageId) ? pageId : null);
-    if (navTarget) {
-      const navBtn = document.querySelector(`.nav-item[data-nav="${navTarget}"]`);
-      if (navBtn) navBtn.classList.add('active');
-    }
-
-    updateSidebarActive();
-    renderCurrentPage();
-  }
-
-  function renderCurrentPage() {
-    renderHome();
-    renderTaskPage('daily');
-    renderHubPage('topic');
-    renderHubPage('english');
-    renderHubPage('edit');
-    renderHubPage('photo');
-    renderInspirations();
-    renderWeekly();
-  }
-
-  // ===== 首页 =====
-  function renderHome() {
-    const date = new Date();
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    document.getElementById('current-date').textContent =
-      `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${weekdays[date.getDay()]}`;
-
-    const todayTasks = state.tasks.filter(t => t.date === todayStr() || !t.date);
-    const done = todayTasks.filter(t => t.done).length;
-    const total = todayTasks.length || 1;
-    const pct = Math.round((done / total) * 100);
-    document.getElementById('progress-circle').setAttribute('stroke-dasharray', `${pct}, 100`);
-    document.getElementById('progress-text').textContent = `${pct}%`;
-
-    const shortcuts = document.getElementById('home-shortcuts');
-    shortcuts.innerHTML = '';
-    PAGES.filter(p => ['daily', 'topic', 'inspo', 'english', 'edit', 'photo', 'weekly'].includes(p.id)).forEach(p => {
-      const card = document.createElement('div');
-      card.className = 'shortcut-card';
-      card.innerHTML = `<div class="shortcut-icon" style="background:${p.bg};color:${p.color};">${p.icon}</div><span class="shortcut-text">${p.name}</span>`;
-      card.addEventListener('click', () => navigateTo(p.id));
-      shortcuts.appendChild(card);
-    });
-  }
-
-  // ===== 任务列表通用 =====
-  function renderTaskPage(boardId) {
-    const container = document.getElementById(`${boardId}-tasks`);
-    if (!container) return;
-    const page = PAGES.find(p => p.id === boardId);
-    const tasks = state.tasks.filter(t => t.boardId === boardId && (t.date === todayStr() || !t.date));
-    container.innerHTML = '';
-
-    if (tasks.length === 0) {
-      container.innerHTML = `<div class="empty-state" style="padding:24px 0;"><p>暂无今日任务<br>点击底部 + 添加</p></div>`;
-      return;
-    }
-
-    tasks.forEach(task => container.appendChild(createTaskEl(task, page)));
-  }
-
-  function createTaskEl(task, page) {
-    const div = document.createElement('div');
-    div.className = `task-item ${task.done ? 'done' : ''}`;
-    div.innerHTML = `
-      <div class="task-icon" style="background:${page.bg};color:${page.color};">${page.icon}</div>
-      <div class="task-content">
-        <p class="task-title">${escapeHtml(task.title)}</p>
-        ${task.desc ? `<p class="task-meta">${escapeHtml(task.desc)}</p>` : ''}
-      </div>
-      <div class="task-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <button class="delete-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-    `;
-    div.addEventListener('click', e => { if (!e.target.closest('.delete-btn')) toggleTask(task.id); });
-    div.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); deleteTask(task.id); });
-    return div;
-  }
-
-  function toggleTask(id) {
-    const task = state.tasks.find(t => t.id === id);
-    if (task) { task.done = !task.done; saveState(); renderCurrentPage(); showToast(task.done ? '已完成 ✓' : '已取消'); }
-  }
-
-  function deleteTask(id) {
-    if (!confirm('确定删除？')) return;
-    state.tasks = state.tasks.filter(t => t.id !== id);
-    saveState(); renderCurrentPage(); showToast('已删除');
-  }
-
-  // ===== Hub 板块（选题/英语/剪辑/修图） =====
-  function renderHubPage(boardId) {
-    const recContainer = document.getElementById(`${boardId}-recommend`);
-    const mineContainer = document.getElementById(`${boardId}-mine`);
-    const taskContainer = document.getElementById(`${boardId}-tasks`);
-
-    if (!recContainer || !mineContainer) return;
-
-    // 推荐视频
-    const recs = RECOMMENDATIONS[boardId] || [];
-    recContainer.innerHTML = '';
-    recs.forEach(r => recContainer.appendChild(createResourceEl(r, true)));
-
-    // 我的收藏
-    const mine = state.resources.filter(r => r.boardId === boardId);
-    mineContainer.innerHTML = '';
-    if (mine.length === 0) {
-      mineContainer.innerHTML = `<div class="empty-state" style="padding:20px 0;"><p style="font-size:13px;">还没有收藏资料<br>点击底部 + 添加视频或图文</p></div>`;
-    } else {
-      mine.forEach(r => mineContainer.appendChild(createResourceEl(r, false)));
-    }
-
-    // 任务
-    if (taskContainer) renderTaskPage(boardId);
-  }
-
-  function createResourceEl(resource, isRec) {
-    const pf = PLATFORMS[resource.platform] || PLATFORMS.other;
-    const div = document.createElement('div');
-    div.className = `resource-item ${isRec ? 'recommended' : ''}`;
-    const typeIcon = resource.type === 'image' ? '🖼️' : resource.type === 'article' ? '📄' : '▶️';
-
-    div.innerHTML = `
-      <span class="platform-badge ${pf.cls}">${pf.name}</span>
-      <div class="resource-thumb">${typeIcon}</div>
-      <div class="resource-info">
-        <p class="resource-title">${escapeHtml(resource.title)}</p>
-        <p class="resource-desc">${escapeHtml(resource.desc || '')}</p>
-      </div>
-      ${isRec ? '<span class="rec-badge">推荐</span>' : `
-        <div class="resource-actions">
-          <button class="open-btn" title="打开链接">🔗</button>
-          <button class="del-res-btn" title="删除">🗑</button>
-        </div>
-      `}
-    `;
-
-    div.addEventListener('click', e => {
-      if (e.target.closest('.del-res-btn')) {
-        e.stopPropagation();
-        if (confirm('确定删除？')) {
-          state.resources = state.resources.filter(r => r.id !== resource.id);
-          saveState(); renderCurrentPage(); showToast('已删除');
-        }
-        return;
-      }
-      if (e.target.closest('.open-btn')) return;
-      if (resource.url && resource.url.startsWith('http')) {
-        window.open(resource.url, '_blank');
-      }
-    });
-
-    // 推荐也加打开链接
-    if (isRec && resource.url) {
-      div.addEventListener('click', () => {
-        if (resource.url.startsWith('http')) window.open(resource.url, '_blank');
-      });
-    }
-
-    return div;
-  }
-
-  // ===== 灵感抓取 =====
-  function initDouyinInput() {
-    const input = document.getElementById('douyin-link-input');
-    const btn = document.getElementById('douyin-link-btn');
-    const resultCard = document.getElementById('douyin-result-card');
-
-    btn.addEventListener('click', () => {
-      const url = input.value.trim();
-      if (!url) { showToast('请先粘贴链接'); return; }
-      showDouyinManualInput(url);
-    });
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const url = input.value.trim();
-        if (!url) { showToast('请先粘贴链接'); return; }
-        showDouyinManualInput(url);
-      }
-    });
-  }
-
-  function showDouyinManualInput(sourceUrl) {
-    const resultCard = document.getElementById('douyin-result-card');
-    const input = document.getElementById('douyin-link-input');
-
-    resultCard.style.display = 'block';
-    resultCard.innerHTML = `
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
-        🔗 链接：<span style="word-break:break-all;color:var(--text);">${escapeHtml(sourceUrl)}</span>
-      </div>
-      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">📝 粘贴视频中的金句或文案</div>
-      <textarea class="form-textarea" id="douyin-manual-content" rows="4" placeholder="把视频里打动你的那句话、那段文案复制到这里..." style="margin-bottom:12px;"></textarea>
-      <div class="douyin-result-tags" id="douyin-live-tags" style="margin-bottom:12px;"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn-primary" id="douyin-analyze-btn" style="flex:1;min-width:100px;">分析并分类</button>
-        <button class="btn-secondary" id="douyin-skip-btn" style="flex:1;min-width:80px;">只保存链接</button>
-        <button class="btn-secondary" id="douyin-close-btn" style="flex:1;min-width:60px;">取消</button>
-      </div>
-    `;
-
-    const contentTa = document.getElementById('douyin-manual-content');
-
-    contentTa.addEventListener('input', () => {
-      const content = contentTa.value.trim();
-      if (content.length > 3) {
-        const result = analyzeDouyinContent(content, sourceUrl);
-        const ti = INSPO_TYPES.find(t => t.id === result.type) || INSPO_TYPES[0];
-        document.getElementById('douyin-live-tags').innerHTML = `
-          <span style="font-size:12px;color:var(--text-muted);margin-right:6px;">预测分类：</span>
-          <span style="font-size:12px;font-weight:600;color:${ti.color};">${ti.icon} ${ti.name}</span>
-          ${result.tags.map(t => `<span class="douyin-result-tag">#${t}</span>`).join('')}
-        `;
-      } else {
-        document.getElementById('douyin-live-tags').innerHTML = '';
-      }
-    });
-
-    document.getElementById('douyin-analyze-btn').addEventListener('click', () => {
-      const content = contentTa.value.trim();
-      if (!content || content.length < 5) { showToast('请先粘贴视频中的文案或金句'); return; }
-      const result = analyzeDouyinContent(content, sourceUrl);
-      showDouyinResult(result);
-    });
-
-    document.getElementById('douyin-skip-btn').addEventListener('click', () => {
-      state.inspirations.push({
-        id: generateId(), title: '待整理灵感', type: 'topic',
-        desc: `来源链接：${sourceUrl}`, source: '待分类', sourceUrl, tags: [], createdAt: Date.now()
-      });
-      saveState(); renderInspirations();
-      resultCard.style.display = 'none'; input.value = '';
-      showToast('已保存链接（待整理）');
-    });
-
-    document.getElementById('douyin-close-btn').addEventListener('click', () => { resultCard.style.display = 'none'; });
-  }
-
-  function analyzeDouyinContent(content, sourceUrl) {
-    const scores = {};
-    for (const [type, keywords] of Object.entries(DOUYIN_KEYWORDS)) {
-      scores[type] = keywords.reduce((sum, kw) => sum + (content.includes(kw) ? 1 : 0), 0);
-    }
-    const bestType = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
-    const confidence = bestType[1] > 0 ? Math.min(bestType[1] * 25, 95) : 50;
-    const type = bestType[1] > 0 ? bestType[0] : 'quote';
-    const title = content.length > 80 ? content.slice(0, 80) + '...' : content;
-    const tags = [];
-    if (content.includes('文案')) tags.push('文案');
-    if (content.includes('选题')) tags.push('选题');
-    if (content.includes('拍摄') || content.includes('构图')) tags.push('拍摄技巧');
-    if (content.includes('金句') || content.includes('语录')) tags.push('金句');
-    if (content.includes('音乐') || content.includes('BGM')) tags.push('音乐');
-    if (content.includes('评论')) tags.push('评论');
-    return { title, summary: content, type, confidence, tags, sourceUrl };
-  }
-
-  function showDouyinResult(result) {
-    const resultCard = document.getElementById('douyin-result-card');
-    const input = document.getElementById('douyin-link-input');
-    const ti = INSPO_TYPES.find(t => t.id === result.type) || INSPO_TYPES[0];
-
-    resultCard.innerHTML = `
-      <div class="douyin-result-header">
-        <span class="douyin-result-type" style="background:${ti.color}15;color:${ti.color};">${ti.icon} ${ti.name}</span>
-        <span class="douyin-result-confidence">匹配度 ${result.confidence}%</span>
-      </div>
-      <p class="douyin-result-title">${escapeHtml(result.title)}</p>
-      <p class="douyin-result-summary">${escapeHtml(result.summary)}</p>
-      <div class="douyin-result-tags">${result.tags.map(t => `<span class="douyin-result-tag">#${t}</span>`).join('')}</div>
-      <div class="douyin-result-actions">
-        <button class="btn-primary" id="douyin-save-btn">保存到灵感库</button>
-        <button class="btn-secondary" id="douyin-edit-btn">修改后再保存</button>
-        <button class="btn-secondary" id="douyin-back-btn">返回重填</button>
-      </div>
-    `;
-
-    document.getElementById('douyin-save-btn').addEventListener('click', () => {
-      state.inspirations.push({
-        id: generateId(), title: result.title, type: result.type,
-        desc: result.summary, source: '抖音', sourceUrl: result.sourceUrl,
-        tags: result.tags, createdAt: Date.now()
-      });
-      saveState(); renderInspirations();
-      resultCard.style.display = 'none'; input.value = '';
-      showToast('灵感已保存 ✓');
-    });
-
-    document.getElementById('douyin-edit-btn').addEventListener('click', () => {
-      document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
-      document.querySelector('.add-tab[data-tab="inspiration"]').classList.add('active');
-      document.getElementById('entry-board').value = result.type;
-      document.getElementById('entry-title').value = result.title;
-      document.getElementById('entry-desc').value = result.summary;
-      resultCard.style.display = 'none'; input.value = '';
-      navigateTo('add');
-    });
-
-    document.getElementById('douyin-back-btn').addEventListener('click', () => {
-      showDouyinManualInput(result.sourceUrl);
-    });
-  }
-
-  function renderInspirations() {
-    const filterBar = document.getElementById('inspo-filter');
-    if (!filterBar || filterBar.children.length === 0) {
-      filterBar.innerHTML = `<button class="filter-btn ${currentInspoFilter === 'all' ? 'active' : ''}" data-filter="all">全部</button>`;
-      INSPO_TYPES.forEach(t => {
-        filterBar.innerHTML += `<button class="filter-btn ${currentInspoFilter === t.id ? 'active' : ''}" data-filter="${t.id}">${t.name}</button>`;
-      });
-      filterBar.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => { currentInspoFilter = btn.dataset.filter; renderInspirations(); });
-      });
-    }
-
-    const list = document.getElementById('inspo-list');
-    if (!list) return;
-    list.innerHTML = '';
-
-    const filtered = currentInspoFilter === 'all' ? state.inspirations : state.inspirations.filter(i => i.type === currentInspoFilter);
-
-    if (filtered.length === 0) {
-      list.innerHTML = `<div class="empty-state" style="padding:30px 0;"><p>还没有灵感素材<br>粘贴链接或点击底部 + 添加</p></div>`;
-      return;
-    }
-
-    filtered.sort((a, b) => b.createdAt - a.createdAt).forEach(item => {
-      const type = INSPO_TYPES.find(t => t.id === item.type) || INSPO_TYPES[0];
-      const card = document.createElement('div');
-      card.className = 'inspo-card';
-      card.dataset.type = item.type;
-      card.innerHTML = `
-        <div class="inspo-type" style="color:${type.color};">${type.icon} ${type.name}</div>
-        <p class="inspo-title">${escapeHtml(item.title)}</p>
-        ${item.desc ? `<p class="inspo-desc">${escapeHtml(item.desc)}</p>` : ''}
-        ${item.tags && item.tags.length ? `<div class="douyin-result-tags" style="margin-bottom:10px;">${item.tags.map(t => `<span class="douyin-result-tag">#${t}</span>`).join('')}</div>` : ''}
-        ${item.sourceUrl ? `<p class="inspo-desc" style="font-size:11px;">🔗 <a href="${escapeHtml(item.sourceUrl)}" target="_blank" style="color:var(--text-muted);">查看原链接</a></p>` : ''}
-        <div class="inspo-actions">
-          <button class="copy-inspo-btn" data-id="${item.id}">复制</button>
-          <button class="del-inspo-btn" data-id="${item.id}">删除</button>
-        </div>
-      `;
-      list.appendChild(card);
-    });
-
-    list.querySelectorAll('.copy-inspo-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const item = state.inspirations.find(x => x.id === btn.dataset.id);
-        if (item) navigator.clipboard.writeText(`${item.title}\n${item.desc || ''}`).then(() => showToast('已复制'));
-      });
-    });
-
-    list.querySelectorAll('.del-inspo-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        if (confirm('确定删除？')) {
-          state.inspirations = state.inspirations.filter(x => x.id !== btn.dataset.id);
-          saveState(); renderInspirations(); showToast('已删除');
-        }
-      });
-    });
-  }
-
-  // ===== 周周复盘 =====
-  function renderWeekly() {
-    const container = document.getElementById('weekly-content');
-    if (!container) return;
-    document.getElementById('weekly-week-label').textContent = weeklyWeek;
-
-    const sections = [
-      { key: 'done', label: '✅ 本周完成', placeholder: '这周完成了哪些事？' },
-      { key: 'learned', label: '📖 学到了什么', placeholder: '新技能、新认知、新方法……' },
-      { key: 'improve', label: '🔧 需要改进', placeholder: '哪些地方可以做得更好？' },
-      { key: 'next', label: '🎯 下周计划', placeholder: '下周的重点目标和行动……' }
-    ];
-
-    const data = state.weeklies[weeklyWeek] || {};
-    container.innerHTML = sections.map(s => `
-      <div class="weekly-section">
-        <div class="weekly-section-title">${s.label}</div>
-        <textarea class="weekly-textarea" data-weekly-key="${s.key}" placeholder="${s.placeholder}" rows="3">${escapeHtml(data[s.key] || '')}</textarea>
-      </div>
-    `).join('');
-
-    container.querySelectorAll('.weekly-textarea').forEach(ta => {
-      ta.addEventListener('input', () => {
-        if (!state.weeklies[weeklyWeek]) state.weeklies[weeklyWeek] = {};
-        state.weeklies[weeklyWeek][ta.dataset.weeklyKey] = ta.value;
-        saveState();
-      });
-    });
-  }
-
-  function changeWeek(delta) {
-    const current = weeklyWeek.split(' - ')[0];
-    const [m, d] = current.split('/').map(Number);
-    const ref = new Date(new Date().getFullYear(), m - 1, d);
-    ref.setDate(ref.getDate() + delta * 7);
-    weeklyWeek = weekStr(ref);
-    renderWeekly();
-  }
-
-  // ===== 添加表单 =====
-  function initAddForm() {
-    updateAddForm('task');
-    document.getElementById('entry-date').value = todayStr();
-
-    document.querySelectorAll('.add-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.add-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        updateAddForm(tab.dataset.tab);
-      });
-    });
-
-    document.getElementById('add-form').addEventListener('submit', e => {
-      e.preventDefault();
-      const type = document.querySelector('.add-tab.active').dataset.tab;
-      const title = document.getElementById('entry-title').value.trim();
-      const desc = document.getElementById('entry-desc').value.trim();
-      const date = document.getElementById('entry-date').value || todayStr();
-      const board = document.getElementById('entry-board').value;
-
-      if (!title) { showToast('请输入标题'); return; }
-
-      if (type === 'task') {
-        state.tasks.push({ id: generateId(), boardId: board, title, date, done: false, desc, createdAt: Date.now() });
-        saveState();
-        e.target.reset();
-        document.getElementById('entry-date').value = todayStr();
-        showToast('任务已保存');
-        navigateTo(board);
-      } else if (type === 'resource') {
-        const resType = document.getElementById('resource-type').value;
-        const platform = document.getElementById('entry-platform').value;
-        state.resources.push({ id: generateId(), boardId: board, title, desc, url: desc, type: resType, platform, createdAt: Date.now() });
-        saveState();
-        e.target.reset();
-        document.getElementById('entry-date').value = todayStr();
-        showToast('学习资料已保存');
-        navigateTo(board);
-      } else {
-        state.inspirations.push({ id: generateId(), title, type: board, desc, source: '手动添加', sourceUrl: '', createdAt: Date.now() });
-        saveState();
-        e.target.reset();
-        document.getElementById('entry-date').value = todayStr();
-        showToast('灵感已保存');
-        navigateTo('inspo');
-      }
-    });
-  }
-
-  function updateAddForm(type) {
-    const boardSelect = document.getElementById('entry-board');
-    boardSelect.innerHTML = '';
-
-    document.getElementById('resource-type-group').style.display = type === 'resource' ? 'flex' : 'none';
-    document.getElementById('platform-group').style.display = type === 'resource' ? 'flex' : 'none';
-    document.getElementById('date-group').style.display = type === 'resource' ? 'none' : 'flex';
-    document.getElementById('desc-label').textContent = type === 'resource' ? '链接（视频/图文地址）' : '备注 / 链接 / 详情';
-
-    if (type === 'task') {
-      TASK_PAGES.forEach(id => {
-        const p = PAGES.find(x => x.id === id);
-        boardSelect.add(new Option(`${p.icon} ${p.name}`, id));
-      });
-    } else if (type === 'resource') {
-      HUB_PAGES.forEach(id => {
-        const p = PAGES.find(x => x.id === id);
-        boardSelect.add(new Option(`${p.icon} ${p.name}`, id));
-      });
-    } else {
-      INSPO_TYPES.forEach(t => boardSelect.add(new Option(`${t.icon} ${t.name}`, t.id)));
-    }
-  }
-
-  // ===== 导入导出 =====
-  function exportData() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `yingying-workbench-${todayStr()}.json`;
-    a.click(); URL.revokeObjectURL(url);
-    showToast('数据已导出');
-  }
-
-  function importData(file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (data.tasks && data.inspirations) {
-          state = data;
-          if (!state.resources) state.resources = [];
-          if (!state.weeklies) state.weeklies = {};
-          saveState(); renderCurrentPage();
-          showToast('数据导入成功');
-        } else { throw new Error('格式错误'); }
-      } catch (err) { showToast('导入失败：文件格式错误'); }
-    };
-    reader.readAsText(file);
-  }
-
-  // ===== 初始化 =====
-  function init() {
-    initSidebar();
-    initAddForm();
-    initDouyinInput();
-
-    document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.addEventListener('click', () => navigateTo(btn.dataset.nav));
-    });
-
-    document.getElementById('week-prev').addEventListener('click', () => changeWeek(-1));
-    document.getElementById('week-next').addEventListener('click', () => changeWeek(1));
-
-    document.getElementById('sync-btn').addEventListener('click', () => {
-      const btn = document.getElementById('sync-btn');
-      btn.classList.add('syncing');
-      showToast('同步完成（本地模式）');
-      setTimeout(() => btn.classList.remove('syncing'), 1200);
-    });
-
-    document.getElementById('export-btn').addEventListener('click', exportData);
-    document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
-    document.getElementById('import-file').addEventListener('change', e => {
-      if (e.target.files[0]) importData(e.target.files[0]);
-      e.target.value = '';
-    });
-    document.getElementById('clear-btn').addEventListener('click', () => {
-      if (confirm('确定清空所有数据？此操作不可恢复。')) {
-        state = defaultState();
-        saveState(); renderCurrentPage();
-        showToast('数据已清空');
-      }
-    });
-
-    navigateTo('home');
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/yingying-workbench/sw.js', { scope: '/yingying-workbench/' }).catch(() => {});
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', init);
+  /* ---------- 专注奖励 ---------- */
+  const REWARDS = [
+    { e: '🌟', t: '你真棒！', s: '刚刚那段时间，你只属于自己。' },
+    { e: '🎉', t: '太厉害了！', s: '又一次说到做到，这就是了不起。' },
+    { e: '🍀', t: '真的很棒！', s: '专注的样子，比任何滤镜都好看。' },
+    { e: '🌸', t: '你做到了！', s: '一点一点来，你已经走了很远。' },
+    { e: '🧁', t: '给你比心！', s: '奖励自己一小块蛋糕吧，值得的。' },
+    { e: '🐰', t: '棒棒的！', s: '今天的你，比昨天更靠近想去的地方。' },
+    { e: '☁️', t: '完成啦！', s: '深呼吸，你已经把这件事做完了。' },
+    { e: '🏆', t: '厉害！', s: '专注是种能力，你正在越练越强。' },
+    { e: '🌈', t: '好样的！', s: '别小看这几十分钟，它们会攒成大事。' },
+    { e: '🍓', t: '超级棒！', s: '你值得为刚刚的自己骄傲一下。' }
+  ];
+
+  const BADGES = [
+    { n: 1,  e: '🌱', l: '第一次' },
+    { n: 5,  e: '🌿', l: '5 次' },
+    { n: 10, e: '🍀', l: '10 次' },
+    { n: 20, e: '🌸', l: '20 次' },
+    { n: 30, e: '🌻', l: '30 次' },
+    { n: 50, e: '🏆', l: '50 次' },
+    { n: 80, e: '💎', l: '80 次' },
+    { n: 120,e: '👑', l: '120 次' }
+  ];
+
+  const QUOTES = [
+    '慢慢来，比较快 ☁️',
+    '今天也要好好吃饭呀 🍚',
+    '你已经比昨天更好了 ✨',
+    '不着急，一件一件来 🌿',
+    '做不完也没关系的 🫧',
+    '你值得被自己温柔对待 🌸',
+    '每一步都算数 🐾',
+    '今天也辛苦啦 🍵'
+  ];
+
+  const INSPO_TYPES = [
+    { k: 'quote',   e: '💬', l: '金句' },
+    { k: 'copy',    e: '✍️', l: '文案' },
+    { k: 'comment', e: '🗯', l: '神评论' },
+    { k: 'idea',    e: '💡', l: '想法' },
+    { k: 'style',   e: '🎨', l: '画面风格' },
+    { k: 'other',   e: '🔖', l: '其他' }
+  ];
+
+  return { TOPIC_XHS, TOPIC_DY, SENTENCES, WORDS, LIT, EX_TOPICS, MOODS,
+           REASONS_GOOD, REASONS_BAD, MONEY_CATS, REWARDS, BADGES, QUOTES, INSPO_TYPES };
 })();
