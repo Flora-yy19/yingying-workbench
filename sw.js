@@ -906,3 +906,353 @@
       save(); renderExHistory(); renderHome();
     });
   }
+  /* ================= 美食 ================= */
+  let foodImg = null, foodStar = 5;
+
+  function compressImage(file, cb) {
+    const fr = new FileReader();
+    fr.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 620;
+        let w = img.width, h = img.height;
+        const s = Math.min(1, MAX / Math.max(w, h));
+        w = Math.round(w * s); h = Math.round(h * s);
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        cb(cv.toDataURL('image/jpeg', .72));
+      };
+      img.src = e.target.result;
+    };
+    fr.readAsDataURL(file);
+  }
+
+  function renderFoodStars() {
+    const box = $('food-stars');
+    box.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const s = el('span', i <= foodStar ? 'on' : '', '★');
+      (function (n) { s.addEventListener('click', () => { foodStar = n; renderFoodStars(); }); })(i);
+      box.appendChild(s);
+    }
+  }
+
+  function renderFood() {
+    renderFoodStars();
+    const box = $('food-grid');
+    box.innerHTML = '';
+    $('food-count').textContent = S.foods.length ? S.foods.length + ' 张' : '';
+    if (!S.foods.length) {
+      box.style.display = 'block';
+      box.appendChild(el('div', 'empty', '<span class="e-icon">🍰</span>还没有贴纸<br>拍下第一顿好吃的吧'));
+      return;
+    }
+    box.style.display = '';
+    S.foods.slice().reverse().forEach(f => {
+      const c = el('div', 'food-sticker');
+      c.innerHTML =
+        `<div class="fs-tape"></div>
+         ${f.img ? `<img class="fs-img" src="${f.img}" alt="">` : `<div class="fs-ph">🍽</div>`}
+         <div class="fs-name">${esc(f.name || '好吃的')}</div>
+         <div class="fs-shop">${esc(f.shop || f.date)}</div>
+         <div class="fs-foot"><span class="fs-star">${'★'.repeat(f.stars || 0)}</span>
+         <span class="fs-price">${f.price ? '¥' + esc(f.price) : ''}</span></div>`;
+      c.addEventListener('click', () => {
+        if (confirm(`${f.name}\n${f.shop || ''}\n${f.note || ''}\n\n删除这张贴纸？`)) {
+          S.foods = S.foods.filter(x => x.id !== f.id); save(); renderFood();
+        }
+      });
+      box.appendChild(c);
+    });
+  }
+
+  function initFood() {
+    $('food-file').addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      compressImage(f, url => {
+        foodImg = url;
+        const p = $('food-preview');
+        p.src = url; p.style.display = '';
+        $('food-drop').style.display = 'none';
+      });
+    });
+    $('food-save').addEventListener('click', () => {
+      const name = $('food-name').value.trim();
+      if (!name && !foodImg) return toast('至少写个名字或放张图 🍽');
+      S.foods.push({
+        id: uid(), name: name, shop: $('food-shop').value.trim(),
+        price: $('food-price').value.trim(), stars: foodStar,
+        note: $('food-note').value.trim(), img: foodImg, date: dstr()
+      });
+      foodImg = null; foodStar = 5;
+      ['food-name', 'food-shop', 'food-price', 'food-note'].forEach(i => $(i).value = '');
+      $('food-preview').style.display = 'none';
+      $('food-drop').style.display = '';
+      $('food-file').value = '';
+      save(); renderFood(); toast('贴纸做好啦 🧷');
+    });
+  }
+
+  /* ================= 文学 ================= */
+  let litCat = 'all', litOff = 0;
+  function renderLit() {
+    const box = $('lit-list');
+    box.innerHTML = '';
+    let list;
+    if (litCat === 'mine') {
+      list = S.lit.slice().reverse();
+      $('lit-tip').textContent = '我的摘抄本';
+      if (!list.length) { box.appendChild(el('div', 'empty', '<span class="e-icon">✒️</span>摘抄本还是空的<br>往下加一句喜欢的话')); return; }
+    } else {
+      const pool = D.LIT.concat(S.lit).filter(x => litCat === 'all' || x.c === litCat);
+      $('lit-tip').textContent = '今日推送';
+      list = [];
+      for (let i = 0; i < Math.min(6, pool.length); i++) list.push(pool[(daySeed() + litOff * 6 + i) % pool.length]);
+    }
+    const CN = { poem: '诗歌', prose: '散文', novel: '小说', other: '其他' };
+    list.forEach(x => {
+      const c = el('div', 'lit-card');
+      c.innerHTML =
+        `<div class="lit-quote">${esc(x.q)}</div>
+         <div class="lit-src"><span class="lit-cat ${x.c || 'other'}">${CN[x.c] || '其他'}</span>
+         <span class="ls-book">《${esc(x.b)}》</span><span>· ${esc(x.a)}</span></div>
+         <div style="display:flex;gap:8px;margin-top:12px">
+           <button class="btn-ghost cp">📋 复制</button>
+           <button class="btn-ghost sv">🌱 存进灵感</button>
+           ${x.id ? '<button class="btn-ghost dl">🗑</button>' : ''}
+         </div>`;
+      c.querySelector('.cp').addEventListener('click', () => {
+        if (navigator.clipboard) navigator.clipboard.writeText(`${x.q}\n——《${x.b}》${x.a}`).then(() => toast('已复制'));
+      });
+      c.querySelector('.sv').addEventListener('click', () => {
+        S.inspos.push({ id: uid(), text: `${x.q}\n——《${x.b}》${x.a}`, type: 'quote', src: 'other', date: dstr() });
+        save(); toast('已存进灵感 🌱');
+      });
+      const dl = c.querySelector('.dl');
+      if (dl) dl.addEventListener('click', () => {
+        S.lit = S.lit.filter(y => y.id !== x.id); save(); renderLit();
+      });
+      box.appendChild(c);
+    });
+  }
+
+  function initLit() {
+    $('lit-seg').addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      litCat = b.dataset.cat;
+      $('lit-seg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      renderLit();
+    });
+    $('lit-refresh').addEventListener('click', () => { litOff++; renderLit(); });
+    $('lit-save').addEventListener('click', () => {
+      const q = $('lit-q').value.trim();
+      if (!q) return toast('先摘一句话吧 ✒️');
+      S.lit.push({
+        id: uid(), q: q, b: $('lit-book').value.trim() || '未命名',
+        a: $('lit-author').value.trim() || '佚名', c: $('lit-cat').value
+      });
+      ['lit-q', 'lit-book', 'lit-author'].forEach(i => $(i).value = '');
+      save(); renderLit(); toast('收进摘抄本啦 📖');
+    });
+  }
+
+  /* ================= 记账 ================= */
+  let moKind = 'out', moChartKind = 'out', moMonth = mstr();
+
+  function shiftMonth(m, n) {
+    const p = m.split('-').map(Number);
+    return mstr(new Date(p[0], p[1] - 1 + n, 1));
+  }
+
+  function renderMoCats() {
+    const sel = $('mo-cat');
+    sel.innerHTML = '';
+    D.MONEY_CATS[moKind].forEach(c => {
+      const o = el('option', null, `${c.e} ${c.l}`);
+      o.value = c.k; sel.appendChild(o);
+    });
+  }
+
+  function renderMoney() {
+    const mp = moMonth.split('-');
+    $('mo-label').textContent = `${mp[0]} 年 ${+mp[1]} 月`;
+    if (!$('mo-date').value) $('mo-date').value = dstr();
+    renderMoCats();
+
+    const list = S.money.filter(x => x.date.slice(0, 7) === moMonth);
+    const inSum = list.filter(x => x.kind === 'in').reduce((a, b) => a + b.amount, 0);
+    const outSum = list.filter(x => x.kind === 'out').reduce((a, b) => a + b.amount, 0);
+    $('mo-in').textContent = money(inSum);
+    $('mo-out').textContent = money(outSum);
+    $('mo-balance').textContent = (inSum - outSum < 0 ? '-¥' : '¥') + money(Math.abs(inSum - outSum));
+    $('mo-count').textContent = list.length ? list.length + ' 笔' : '';
+
+    const cb = $('mo-cats');
+    cb.innerHTML = '';
+    const sub = list.filter(x => x.kind === moChartKind);
+    const total = sub.reduce((a, b) => a + b.amount, 0);
+    if (!total) {
+      cb.appendChild(el('div', 'empty', '<span class="e-icon">📊</span>本月还没有记录'));
+    } else {
+      D.MONEY_CATS[moChartKind]
+        .map(c => ({ c: c, v: sub.filter(x => x.cat === c.k).reduce((a, b) => a + b.amount, 0) }))
+        .filter(x => x.v > 0)
+        .sort((a, b) => b.v - a.v)
+        .forEach(o => {
+          const row = el('div', 'cat-bar-row');
+          row.innerHTML =
+            `<div class="cat-bar-head"><span class="cb-i">${o.c.e}</span><span class="cb-n">${o.c.l}</span>
+             <span class="cb-v">¥${money(o.v)} · ${Math.round(o.v / total * 100)}%</span></div>
+             <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${o.v / total * 100}%;background:${o.c.c}"></div></div>`;
+          cb.appendChild(row);
+        });
+    }
+
+    const lb = $('mo-list');
+    lb.innerHTML = '';
+    if (!list.length) { lb.appendChild(el('div', 'empty', '<span class="e-icon">🧾</span>这个月还没记账<br>从今天的第一笔开始')); return; }
+    const byDay = {};
+    list.forEach(x => { (byDay[x.date] = byDay[x.date] || []).push(x); });
+    Object.keys(byDay).sort().reverse().forEach(day => {
+      const items = byDay[day];
+      const di = items.filter(x => x.kind === 'in').reduce((a, b) => a + b.amount, 0);
+      const dou = items.filter(x => x.kind === 'out').reduce((a, b) => a + b.amount, 0);
+      lb.appendChild(el('div', 'day-group-title',
+        `<span>${day.slice(5)}</span><span>${di ? '收 ¥' + money(di) + '　' : ''}${dou ? '支 ¥' + money(dou) : ''}</span>`));
+      items.forEach(x => {
+        const c = D.MONEY_CATS[x.kind].find(y => y.k === x.cat) || { e: '📦', l: '其他', c: '#EFE5F9' };
+        const n = el('div', 'money-item');
+        n.innerHTML = `<div class="mi-ic" style="background:${c.c}33">${c.e}</div>
+          <div class="mi-b"><div class="mi-t">${c.l}${x.note ? ' · ' + esc(x.note) : ''}</div>
+          <div class="mi-d">${x.date}</div></div>
+          <div class="mi-a ${x.kind}">${x.kind === 'in' ? '+' : '-'}${money(x.amount)}</div>`;
+        n.addEventListener('click', () => {
+          if (confirm(`删除这笔？\n${c.l} ${x.kind === 'in' ? '+' : '-'}${money(x.amount)}`)) {
+            S.money = S.money.filter(y => y.id !== x.id); save(); renderMoney();
+          }
+        });
+        lb.appendChild(n);
+      });
+    });
+  }
+
+  function initMoney() {
+    $('mo-kind').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      moKind = b.dataset.kind;
+      $('mo-kind').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      renderMoCats();
+    });
+    $('mo-chart-kind').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      moChartKind = b.dataset.k;
+      $('mo-chart-kind').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      renderMoney();
+    });
+    $('mo-prev').addEventListener('click', () => { moMonth = shiftMonth(moMonth, -1); renderMoney(); });
+    $('mo-next').addEventListener('click', () => { moMonth = shiftMonth(moMonth, 1); renderMoney(); });
+    $('mo-save').addEventListener('click', () => {
+      const a = parseFloat($('mo-amount').value);
+      if (!(a > 0)) return toast('先填个金额呀 💰');
+      const dt = $('mo-date').value || dstr();
+      S.money.push({
+        id: uid(), kind: moKind, amount: a, cat: $('mo-cat').value,
+        note: $('mo-note').value.trim(), date: dt
+      });
+      $('mo-amount').value = ''; $('mo-note').value = '';
+      moMonth = dt.slice(0, 7);
+      save(); renderMoney(); toast(moKind === 'in' ? '收入记好啦 🌿' : '支出记好啦 🧾');
+    });
+  }
+
+  /* ================= 周周复盘 ================= */
+  const wkDate = new Date();
+  function renderWeekly() {
+    const k = weekKey(wkDate);
+    $('wk-label').textContent = `第 ${+k.split('-W')[1]} 周　${weekRange(wkDate)}`;
+    const w = S.weekly[k] || {};
+    document.querySelectorAll('[data-wk]').forEach(t => { t.value = w[t.dataset.wk] || ''; });
+
+    const s = new Date(wkDate); s.setDate(s.getDate() - ((s.getDay() + 6) % 7)); s.setHours(0, 0, 0, 0);
+    const e = new Date(s); e.setDate(e.getDate() + 7);
+    const inRange = ds => { const d = new Date(ds); return d >= s && d < e; };
+    const tk = S.tasks.filter(x => inRange(x.date) && x.done).length;
+    const fm = S.focus.sessions.filter(x => inRange(x.date)).reduce((a, b) => a + b.min, 0);
+    const md = S.moods.filter(x => inRange(x.date)).length;
+    $('wk-stats').innerHTML =
+      `<div class="stat-box"><div class="n">${tk}</div><div class="l">完成任务</div></div>
+       <div class="stat-box"><div class="n">${fm}</div><div class="l">专注分钟</div></div>
+       <div class="stat-box"><div class="n">${md}</div><div class="l">心情记录</div></div>`;
+  }
+
+  function initWeekly() {
+    $('wk-prev').addEventListener('click', () => { wkDate.setDate(wkDate.getDate() - 7); renderWeekly(); });
+    $('wk-next').addEventListener('click', () => { wkDate.setDate(wkDate.getDate() + 7); renderWeekly(); });
+    document.querySelectorAll('[data-wk]').forEach(t => {
+      t.addEventListener('input', () => {
+        const k = weekKey(wkDate);
+        S.weekly[k] = S.weekly[k] || {};
+        S.weekly[k][t.dataset.wk] = t.value;
+        save();
+      });
+    });
+  }
+
+  /* ================= 设置 ================= */
+  function initSettings() {
+    $('export-btn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `影影工作台备份-${dstr()}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      toast('备份已导出 📦');
+    });
+    $('import-btn').addEventListener('click', () => $('import-file').click());
+    $('import-file').addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return;
+      const fr = new FileReader();
+      fr.onload = ev => {
+        try {
+          S = Object.assign(defaultState(), JSON.parse(ev.target.result));
+          localStorage.setItem(KEY, JSON.stringify(S));
+          toast('导入成功，正在刷新…');
+          setTimeout(() => location.reload(), 800);
+        } catch (err) { toast('文件格式不对'); }
+      };
+      fr.readAsText(f);
+    });
+    $('clear-btn').addEventListener('click', () => {
+      if (confirm('真的要清空所有数据吗？建议先导出备份。')) {
+        localStorage.removeItem(KEY);
+        toast('已清空');
+        setTimeout(() => location.reload(), 600);
+      }
+    });
+    $('reward-close').addEventListener('click', () => $('reward-mask').classList.remove('show'));
+    $('reward-mask').addEventListener('click', e => {
+      if (e.target === $('reward-mask')) $('reward-mask').classList.remove('show');
+    });
+  }
+
+  /* ================= 启动 ================= */
+  function boot() {
+    initCover(); initNav(); initDaily(); initTopic(); initInspo();
+    initEnglish(); initFocus(); initMood(); initExpress();
+    initFood(); initLit(); initMoney(); initWeekly(); initSettings();
+    go('home');
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () =>
+        navigator.serviceWorker.register('sw.js').catch(function () {}));
+    }
+  }
+
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', boot)
+    : boot();
+})();
