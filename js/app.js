@@ -92,8 +92,12 @@ body{
 @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
 .yw-reward .em{font-size:54px}
 .yw-reward h3{color:var(--primary-d);margin:8px 0}
-.yw-canvas{position:fixed;inset:0;pointer-events:none;z-index:90}
-.muted{color:var(--muted);font-size:13px}
+  .yw-canvas{position:fixed;inset:0;pointer-events:none;z-index:90}
+  .yw-avatar{display:block;margin:0 auto 4px;filter:drop-shadow(0 6px 14px rgba(160,127,198,.35))}
+  .yw-logo-av{display:inline-flex;vertical-align:middle;margin-right:6px;line-height:0}
+  .yw-task{margin-bottom:10px}
+  .yw-task .x{display:inline-block;margin-top:6px;color:var(--bad);cursor:pointer;font-size:13px;font-weight:700;padding:4px 10px;border-radius:12px;background:#fff0f0}
+  .muted{color:var(--muted);font-size:13px}
 `;
 
   /* ============ 数据 ============ */
@@ -248,6 +252,21 @@ body{
     r.readAsDataURL(file);
   }
 
+  function avatarSVG(size) {
+    size = size || 96;
+    return '<svg class="yw-avatar" viewBox="0 0 120 120" width="' + size + '" height="' + size + '" aria-hidden="true">'
+      + '<defs><radialGradient id="avBg" cx="50%" cy="38%" r="70%">'
+      + '<stop offset="0%" stop-color="#efe6fa"/><stop offset="100%" stop-color="#c9b2e8"/></radialGradient></defs>'
+      + '<circle cx="60" cy="62" r="52" fill="url(#avBg)"/>'
+      + '<path d="M26 46 Q60 4 94 46 Q80 34 60 34 Q40 34 26 46 Z" fill="#a07fc6"/>'
+      + '<circle cx="42" cy="72" r="9" fill="#ffb4a2" opacity=".7"/>'
+      + '<circle cx="78" cy="72" r="9" fill="#ffb4a2" opacity=".7"/>'
+      + '<circle cx="48" cy="60" r="6" fill="#4a4458"/><circle cx="72" cy="60" r="6" fill="#4a4458"/>'
+      + '<circle cx="50" cy="58" r="2" fill="#fff"/><circle cx="74" cy="58" r="2" fill="#fff"/>'
+      + '<path d="M50 80 Q60 90 70 80" stroke="#4a4458" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+
   /* ============ 构建外壳 ============ */
   var PAGES = [
     { id: 'plan', name: '每日计划', ic: '☀️' },
@@ -279,7 +298,7 @@ body{
     document.body.innerHTML =
       '<div class="yw-app">' +
         '<div class="yw-top"><div class="yw-menu" id="ywMenu">☰</div>' +
-          '<div class="logo">影影的工作台</div><div class="sub" id="ywDate"></div></div>' +
+          '<div class="logo"><span class="yw-logo-av">' + avatarSVG(24) + '</span>影影的工作台</div><div class="sub" id="ywDate"></div></div>' +
         '<div id="ywView"></div>' +
         '<div class="yw-bottom"></div>' +
       '</div>' +
@@ -324,6 +343,7 @@ body{
     var q = D.QUOTES[Math.floor(Math.random() * D.QUOTES.length)];
     $('#ywView').innerHTML =
       '<div class="yw-cover"><div class="stars">✦ ✧ ✦</div>' +
+      avatarSVG(96) +
       '<h1>欢 迎</h1><div class="quote">' + esc(q) + '</div>' +
       '<button class="yw-btn" id="ywEnter">进 入</button>' +
       '<div class="muted">今天也要开开心心 ☁️</div></div>';
@@ -358,22 +378,30 @@ body{
     plan: function () {
       $('#ywView').innerHTML =
         '<div class="yw-page-title">☀️ 每日计划</div>' +
-        '<p class="muted" style="margin:0 16px">一天做好三件事，就很棒了</p>' +
+        '<p class="muted" style="margin:0 16px">今天想做好哪几件事？随时添加 ✨</p>' +
         '<div class="yw-card" id="planCard"></div>';
       var c = $('#planCard');
-      c.innerHTML = '<div id="planList"></div>';
-      var list = $('#planList');
       function draw() {
+        var filled = S.tasks.filter(function (t) { return t; }).length;
+        c.innerHTML = '<div id="planList"></div>' +
+          '<button class="yw-pill" id="planAdd" style="margin-top:10px">➕ 添加一件事</button>' +
+          (filled >= 3 ? '<span class="muted" style="margin-left:8px">已达标 🎉</span>' : '');
+        var list = $('#planList');
         list.innerHTML = S.tasks.map(function (t, i) {
-          return '<input class="yw-input" data-i="' + i + '" value="' + esc(t) + '" placeholder="第 ' + (i + 1) + ' 件事">' +
-            (t ? '<span class="x" data-del="' + i + '">✕</span>' : '');
+          return '<div class="yw-task"><input class="yw-input" data-i="' + i + '" value="' + esc(t) + '" placeholder="第 ' + (i + 1) + ' 件事">' +
+            '<span class="x" data-del="' + i + '">✕ 删除</span></div>';
         }).join('');
         list.querySelectorAll('input').forEach(function (inp) {
           inp.oninput = function () { S.tasks[+inp.dataset.i] = inp.value; save(); };
         });
         list.querySelectorAll('.x').forEach(function (x) {
-          x.onclick = function () { S.tasks[+x.dataset.del] = ''; save(); draw(); };
+          x.onclick = function () {
+            S.tasks.splice(+x.dataset.del, 1);
+            if (S.tasks.length === 0) S.tasks = [''];
+            save(); draw();
+          };
         });
+        $('#planAdd').onclick = function () { S.tasks.push(''); save(); draw(); };
       }
       draw();
       if (S.tasks.filter(function (t) { return t; }).length >= 3) award('plan');
